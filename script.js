@@ -1296,6 +1296,8 @@ class GitTerminal {
     
     bindEditorEvents(textarea, lineNumbers, cursorPos, modifiedIndicator, statusMsg) {
         const modal = document.getElementById('editor-modal');
+        const saveBtn = document.getElementById('editor-save-btn');
+        const closeBtn = document.getElementById('editor-close-btn');
         
         // Remove old listeners by cloning
         const newTextarea = textarea.cloneNode(true);
@@ -1319,6 +1321,25 @@ class GitTerminal {
         textarea.addEventListener('scroll', () => {
             lineNumbers.scrollTop = textarea.scrollTop;
         });
+        
+        // Handle Save button click
+        const saveBtnHandler = () => {
+            this.saveEditorContent(textarea, statusMsg, modifiedIndicator);
+        };
+        
+        // Handle Close button click
+        const closeBtnHandler = () => {
+            this.closeEditor(modal);
+        };
+        
+        // Remove old button listeners and add new ones
+        const newSaveBtn = saveBtn.cloneNode(true);
+        saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+        newSaveBtn.addEventListener('click', saveBtnHandler);
+        
+        const newCloseBtn = closeBtn.cloneNode(true);
+        closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+        newCloseBtn.addEventListener('click', closeBtnHandler);
         
         // Handle keyboard shortcuts
         const keydownHandler = (e) => {
