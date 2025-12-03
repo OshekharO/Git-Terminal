@@ -6,6 +6,14 @@
  */
 
 // =============================================================================
+// CONFIGURATION CONSTANTS
+// =============================================================================
+
+const DEFAULT_USER_NAME = 'Git Learner';
+const DEFAULT_USER_EMAIL = 'learner@example.com';
+const DEFAULT_BRANCH = 'main';
+
+// =============================================================================
 // EXTENSIBLE DATA STRUCTURES
 // =============================================================================
 
@@ -28,7 +36,7 @@ const EXERCISES = [
         hint: 'Use: git config --global user.name "Your Name" and git config --global user.email "your@email.com"',
         difficulty: 'beginner',
         category: 'setup',
-        check: (state) => state.config['user.name'] !== 'Git Learner'
+        check: (state) => state.config['user.name'] !== DEFAULT_USER_NAME
     },
     {
         id: 'init-repo',
@@ -281,16 +289,16 @@ class GitTerminal {
     createInitialState() {
         return {
             currentRepo: null,
-            currentBranch: 'main',
-            branches: ['main'],
+            currentBranch: DEFAULT_BRANCH,
+            branches: [DEFAULT_BRANCH],
             commits: [],
             stagingArea: [],
             workingDirectory: {},
             remoteRepos: {},
             config: {
-                'user.name': 'Git Learner',
-                'user.email': 'learner@example.com',
-                'init.defaultBranch': 'main'
+                'user.name': DEFAULT_USER_NAME,
+                'user.email': DEFAULT_USER_EMAIL,
+                'init.defaultBranch': DEFAULT_BRANCH
             },
             HEAD: null
         };
