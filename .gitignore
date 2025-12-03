@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Build artifacts (optional - include dist/ if you want pre-built CSS)
+# dist/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+*.tmp
+*.temp
