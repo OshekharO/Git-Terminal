@@ -2,49 +2,133 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Git Practice Terminal - Learn Git Commands Online</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
         
+        /* CSS Custom Properties for consistent design system */
+        :root {
+            /* Color palette */
+            --color-bg-primary: #0d1117;
+            --color-bg-secondary: #161b22;
+            --color-bg-tertiary: #1a1f2e;
+            --color-bg-input: #21262d;
+            --color-border: #30363d;
+            --color-border-hover: #484f58;
+            
+            --color-text-primary: #e6edf3;
+            --color-text-secondary: #8b949e;
+            --color-text-muted: #6e7681;
+            
+            --color-accent-blue: #58a6ff;
+            --color-accent-green: #3fb950;
+            --color-accent-yellow: #d29922;
+            --color-accent-red: #f85149;
+            --color-accent-purple: #a371f7;
+            --color-accent-pink: #f778ba;
+            --color-accent-orange: #f0883e;
+            
+            /* Spacing system */
+            --space-xs: 0.25rem;
+            --space-sm: 0.5rem;
+            --space-md: 1rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+            --space-2xl: 3rem;
+            
+            /* Typography */
+            --font-size-xs: 0.75rem;
+            --font-size-sm: 0.875rem;
+            --font-size-base: 1rem;
+            --font-size-lg: 1.125rem;
+            --font-size-xl: 1.25rem;
+            
+            /* Border radius */
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            
+            /* Transitions */
+            --transition-fast: 150ms ease;
+            --transition-normal: 200ms ease;
+            --transition-slow: 300ms ease;
+            
+            /* Terminal dimensions */
+            --terminal-min-height: 280px;
+            --terminal-max-height: 400px;
+        }
+        
+        /* Responsive custom properties */
+        @media (min-width: 480px) {
+            :root {
+                --terminal-min-height: 320px;
+                --terminal-max-height: 450px;
+            }
+        }
+        
+        @media (min-width: 768px) {
+            :root {
+                --terminal-min-height: 400px;
+                --terminal-max-height: 500px;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            :root {
+                --terminal-min-height: 450px;
+                --terminal-max-height: 550px;
+            }
+        }
+        
+        /* Base styles */
         * {
             font-family: 'JetBrains Mono', monospace;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
         }
         
         .terminal-bg {
-            background: #0d1117;
+            background: var(--color-bg-primary);
         }
         
         .terminal-header {
-            background: linear-gradient(135deg, #1a1f2e 0%, #161b22 100%);
+            background: linear-gradient(135deg, var(--color-bg-tertiary) 0%, var(--color-bg-secondary) 100%);
         }
         
+        /* Git status colors */
         .git-branch {
-            color: #f778ba;
+            color: var(--color-accent-pink);
         }
         
         .git-added {
-            color: #3fb950;
+            color: var(--color-accent-green);
         }
         
         .git-modified {
-            color: #d29922;
+            color: var(--color-accent-yellow);
         }
         
         .git-deleted {
-            color: #f85149;
+            color: var(--color-accent-red);
         }
         
         .git-untracked {
-            color: #8b949e;
+            color: var(--color-text-secondary);
         }
         
         .commit-hash {
-            color: #58a6ff;
+            color: var(--color-accent-blue);
         }
         
+        /* Blinking cursor animation */
         .blink {
             animation: blink 1s infinite;
         }
@@ -58,7 +142,7 @@
             display: inline-block;
             width: 16px;
             text-align: center;
-            margin-right: 8px;
+            margin-right: var(--space-sm);
             font-weight: bold;
         }
 
@@ -68,117 +152,374 @@
         }
         
         .terminal-output::-webkit-scrollbar-track {
-            background: #1a1f2e;
+            background: var(--color-bg-tertiary);
+            border-radius: var(--radius-sm);
         }
         
         .terminal-output::-webkit-scrollbar-thumb {
-            background: #58a6ff;
-            border-radius: 3px;
+            background: var(--color-accent-blue);
+            border-radius: var(--radius-sm);
+            transition: background var(--transition-normal);
         }
-
-        /* Mobile optimizations */
-        @media (max-width: 768px) {
-            .mobile-stack {
-                flex-direction: column;
+        
+        .terminal-output::-webkit-scrollbar-thumb:hover {
+            background: var(--color-accent-purple);
+        }
+        
+        /* Terminal output container */
+        .terminal-output {
+            min-height: var(--terminal-min-height);
+            max-height: var(--terminal-max-height);
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+        
+        /* Button hover and focus states */
+        .btn-interactive {
+            transition: all var(--transition-normal);
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        
+        .btn-interactive:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn-interactive:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-interactive:focus {
+            outline: 2px solid var(--color-accent-blue);
+            outline-offset: 2px;
+        }
+        
+        /* Quick command buttons */
+        .quick-cmd {
+            transition: all var(--transition-normal);
+            border: 1px solid var(--color-border);
+        }
+        
+        .quick-cmd:hover {
+            background: var(--color-bg-tertiary);
+            border-color: var(--color-border-hover);
+            transform: translateY(-1px);
+        }
+        
+        .quick-cmd:active {
+            transform: translateY(0);
+            background: var(--color-bg-secondary);
+        }
+        
+        /* Input focus state */
+        .input-focus-ring:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--color-accent-blue);
+        }
+        
+        /* Input container animation */
+        .input-container {
+            transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+            border: 1px solid var(--color-border);
+        }
+        
+        .input-container:focus-within {
+            border-color: var(--color-accent-blue);
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+        }
+        
+        /* Window dots animation */
+        .window-dot {
+            transition: transform var(--transition-normal), opacity var(--transition-normal);
+        }
+        
+        .window-dot:hover {
+            transform: scale(1.2);
+            opacity: 0.8;
+        }
+        
+        /* Traffic light animation on hover */
+        .window-controls:hover .window-dot {
+            animation: pulse 0.5s ease-in-out;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+        
+        /* Status badge styles */
+        .status-badge {
+            transition: all var(--transition-normal);
+        }
+        
+        .status-badge:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Modal transitions */
+        .modal-overlay {
+            transition: opacity var(--transition-slow);
+        }
+        
+        .modal-content {
+            transition: transform var(--transition-slow), opacity var(--transition-slow);
+        }
+        
+        .modal-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .modal-overlay.hidden .modal-content {
+            transform: scale(0.95);
+            opacity: 0;
+        }
+        
+        /* Terminal line animation */
+        .terminal-line {
+            animation: fadeIn var(--transition-fast) ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(4px);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0);
+            }
+        }
+        
+        /* Main container responsive fixes */
+        .main-container {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        
+        /* Mobile-first responsive styles (480px) */
+        @media (max-width: 479px) {
+            .main-container {
+                padding: var(--space-sm);
             }
             
-            .mobile-text-sm {
-                font-size: 0.875rem;
+            .terminal-body {
+                padding: var(--space-sm);
             }
             
-            .mobile-p-3 {
-                padding: 0.75rem;
+            .prompt-text {
+                font-size: var(--font-size-xs);
+                max-width: 40%;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
             
-            .mobile-space-y-2 > * + * {
-                margin-top: 0.5rem;
+            .cmd-input {
+                font-size: var(--font-size-sm);
             }
+            
+            .header-title {
+                font-size: var(--font-size-sm);
+            }
+            
+            .header-buttons {
+                gap: var(--space-xs);
+            }
+            
+            .header-buttons button {
+                padding: var(--space-xs) var(--space-sm);
+                font-size: 0.65rem;
+            }
+            
+            .header-buttons button i {
+                display: none;
+            }
+            
+            .quick-actions {
+                gap: var(--space-xs);
+            }
+            
+            .quick-cmd {
+                padding: var(--space-xs) var(--space-sm);
+                font-size: var(--font-size-xs);
+            }
+        }
+        
+        /* Small tablets and large phones (480px - 767px) */
+        @media (min-width: 480px) and (max-width: 767px) {
+            .main-container {
+                padding: var(--space-md);
+            }
+            
+            .terminal-body {
+                padding: var(--space-md);
+            }
+            
+            .prompt-text {
+                font-size: var(--font-size-sm);
+            }
+            
+            .header-buttons button {
+                padding: var(--space-xs) var(--space-sm);
+                font-size: var(--font-size-xs);
+            }
+        }
+        
+        /* Tablets (768px - 1023px) */
+        @media (min-width: 768px) and (max-width: 1023px) {
+            .main-container {
+                padding: var(--space-lg);
+            }
+            
+            .terminal-body {
+                padding: var(--space-lg);
+            }
+        }
+        
+        /* Desktop (1024px+) */
+        @media (min-width: 1024px) {
+            .main-container {
+                padding: var(--space-xl);
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+            
+            .terminal-body {
+                padding: var(--space-xl);
+            }
+        }
+        
+        /* Feedback animation for command execution */
+        @keyframes commandFeedback {
+            0% { background-color: rgba(88, 166, 255, 0.1); }
+            100% { background-color: transparent; }
+        }
+        
+        .command-feedback {
+            animation: commandFeedback 0.3s ease-out;
+        }
+        
+        /* Success feedback */
+        @keyframes successPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(63, 185, 80, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(63, 185, 80, 0); }
+        }
+        
+        .success-feedback {
+            animation: successPulse 0.6s ease-out;
+        }
+        
+        /* Error feedback */
+        @keyframes errorShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+        
+        .error-feedback {
+            animation: errorShake 0.3s ease-out;
         }
     </style>
 </head>
 <body class="terminal-bg text-gray-100 min-h-screen">
-    <div class="container mx-auto px-3 py-4 md:px-4 md:py-6">
+    <div class="main-container container mx-auto px-3 py-4 md:px-4 md:py-6">
         <!-- Header -->
         <div class="flex items-center justify-between mb-4 md:mb-6">
-            <div class="flex items-center space-x-2 md:space-x-3">
-                <div class="w-2 h-2 md:w-3 md:h-3 bg-red-500 rounded-full"></div>
-                <div class="w-2 h-2 md:w-3 md:h-3 bg-yellow-500 rounded-full"></div>
-                <div class="w-2 h-2 md:w-3 md:h-3 bg-green-500 rounded-full"></div>
-                <h1 class="text-lg md:text-xl font-semibold ml-1 md:ml-2">Git Practice</h1>
+            <div class="window-controls flex items-center space-x-2 md:space-x-3">
+                <div class="window-dot w-2 h-2 md:w-3 md:h-3 bg-red-500 rounded-full cursor-pointer"></div>
+                <div class="window-dot w-2 h-2 md:w-3 md:h-3 bg-yellow-500 rounded-full cursor-pointer"></div>
+                <div class="window-dot w-2 h-2 md:w-3 md:h-3 bg-green-500 rounded-full cursor-pointer"></div>
+                <h1 class="header-title text-base sm:text-lg md:text-xl font-semibold ml-1 md:ml-2">Git Practice</h1>
             </div>
             <div class="flex items-center space-x-1 md:space-x-2 text-xs md:text-sm">
-                <span class="px-2 py-1 bg-blue-500/20 text-blue-300 rounded text-xs">v2.1.0</span>
-                <span class="px-2 py-1 bg-green-500/20 text-green-300 rounded text-xs">Online</span>
+                <span class="status-badge px-2 py-1 bg-blue-500/20 text-blue-300 rounded text-xs cursor-default">v2.1.0</span>
+                <span class="status-badge px-2 py-1 bg-green-500/20 text-green-300 rounded text-xs flex items-center cursor-default">
+                    <span class="w-1.5 h-1.5 bg-green-400 rounded-full mr-1 animate-pulse"></span>
+                    Online
+                </span>
             </div>
         </div>
 
         <!-- Terminal Container -->
         <div class="bg-gray-900 rounded-lg md:rounded-xl border border-gray-700 shadow-xl overflow-hidden">
             <!-- Terminal Header -->
-            <div class="terminal-header border-b border-gray-700 px-4 py-3 md:px-6 md:py-4">
-                <div class="flex flex-col md:flex-row md:items-center justify-between space-y-3 md:space-y-0">
+            <div class="terminal-header border-b border-gray-700 px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
                     <div class="flex items-center space-x-2 md:space-x-4">
                         <div class="flex items-center space-x-2">
-                            <i class="fab fa-git-alt text-orange-500 text-lg"></i>
-                            <span class="font-semibold text-sm md:text-base">git-practice</span>
+                            <i class="fab fa-git-alt text-orange-500 text-base sm:text-lg"></i>
+                            <span class="font-semibold text-xs sm:text-sm md:text-base">git-practice</span>
                         </div>
-                        <div class="text-xs md:text-sm text-gray-400">
+                        <div class="hidden sm:block text-xs md:text-sm text-gray-400">
                             Learn Git interactively
                         </div>
                     </div>
-                    <div class="flex flex-wrap gap-1 md:gap-2">
-                        <button id="btn-clear" class="px-2 py-1 md:px-3 md:py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-xs md:text-sm transition-colors flex items-center">
-                            <i class="fas fa-erasher mr-1 text-xs"></i>Clear
+                    <div class="header-buttons flex flex-wrap gap-1 md:gap-2">
+                        <button id="btn-clear" class="btn-interactive px-2 py-1 md:px-3 md:py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-xs md:text-sm flex items-center">
+                            <i class="fas fa-eraser mr-1 text-xs"></i><span>Clear</span>
                         </button>
-                        <button id="btn-reset" class="px-2 py-1 md:px-3 md:py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded text-xs md:text-sm transition-colors flex items-center">
-                            <i class="fas fa-redo mr-1 text-xs"></i>Reset
+                        <button id="btn-reset" class="btn-interactive px-2 py-1 md:px-3 md:py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded text-xs md:text-sm flex items-center">
+                            <i class="fas fa-redo mr-1 text-xs"></i><span>Reset</span>
                         </button>
-                        <button id="btn-exercise" class="px-2 py-1 md:px-3 md:py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-300 rounded text-xs md:text-sm transition-colors flex items-center">
-                            <i class="fas fa-graduation-cap mr-1 text-xs"></i>Exercise
+                        <button id="btn-exercise" class="btn-interactive px-2 py-1 md:px-3 md:py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-300 rounded text-xs md:text-sm flex items-center">
+                            <i class="fas fa-graduation-cap mr-1 text-xs"></i><span>Exercise</span>
                         </button>
-                        <button id="btn-tutorial" class="px-2 py-1 md:px-3 md:py-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 rounded text-xs md:text-sm transition-colors flex items-center">
-                            <i class="fas fa-book mr-1 text-xs"></i>Help
+                        <button id="btn-tutorial" class="btn-interactive px-2 py-1 md:px-3 md:py-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 rounded text-xs md:text-sm flex items-center">
+                            <i class="fas fa-book mr-1 text-xs"></i><span>Help</span>
                         </button>
                     </div>
                 </div>
             </div>
 
             <!-- Terminal Body -->
-            <div class="p-3 md:p-6">
-                <div id="terminal-output" class="terminal-output mb-3 md:mb-4 space-y-1 md:space-y-2 min-h-[300px] md:min-h-[400px] max-h-[400px] md:max-h-[500px] overflow-y-auto text-sm md:text-base">
+            <div class="terminal-body p-3 md:p-6">
+                <div id="terminal-output" class="terminal-output mb-3 md:mb-4 space-y-1 md:space-y-2 text-xs sm:text-sm md:text-base">
                     <!-- Output will be inserted here -->
                 </div>
                 
                 <!-- Input Area -->
-                <div class="flex items-center space-x-2 md:space-x-3 bg-gray-800 rounded-lg px-3 py-2 md:px-4 md:py-3 border border-gray-700">
-                    <div id="prompt" class="text-green-400 font-medium whitespace-nowrap text-sm md:text-base">
-                        git-practice <span id="branch-indicator"></span>:<span class="text-blue-400">~</span>$ 
+                <div class="input-container flex items-center space-x-2 md:space-x-3 bg-gray-800 rounded-lg px-2 py-2 sm:px-3 sm:py-2 md:px-4 md:py-3">
+                    <div id="prompt" class="prompt-text text-green-400 font-medium whitespace-nowrap text-xs sm:text-sm md:text-base flex-shrink-0">
+                        <span class="hidden sm:inline">git-practice</span><span class="sm:hidden">$</span> <span id="branch-indicator"></span><span class="hidden sm:inline text-blue-400">:~</span>$ 
                     </div>
                     <input 
                         id="cmdline" 
                         type="text" 
-                        class="flex-1 bg-transparent border-none outline-none text-gray-100 placeholder-gray-500 text-sm md:text-base"
+                        class="cmd-input flex-1 bg-transparent border-none outline-none text-gray-100 placeholder-gray-500 text-xs sm:text-sm md:text-base min-w-0"
                         placeholder="Type 'git help' for commands..."
                         autocomplete="off"
                         spellcheck="false"
                         autofocus
                     >
-                    <div class="blink text-green-400 text-sm md:text-base">|</div>
+                    <div class="blink text-green-400 text-sm md:text-base flex-shrink-0">|</div>
                 </div>
 
                 <!-- Quick Actions -->
-                <div class="mt-3 md:mt-4 flex flex-wrap gap-1 md:gap-2">
-                    <button data-cmd="git status" class="quick-cmd px-2 py-1 md:px-3 md:py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-xs md:text-sm transition-colors">
+                <div class="quick-actions mt-3 md:mt-4 flex flex-wrap gap-1 md:gap-2">
+                    <button data-cmd="git status" class="quick-cmd px-2 py-1 md:px-3 md:py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-xs md:text-sm">
                         status
                     </button>
-                    <button data-cmd="git log --oneline" class="quick-cmd px-2 py-1 md:px-3 md:py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-xs md:text-sm transition-colors">
+                    <button data-cmd="git log --oneline" class="quick-cmd px-2 py-1 md:px-3 md:py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-xs md:text-sm">
                         log
                     </button>
-                    <button data-cmd="git branch" class="quick-cmd px-2 py-1 md:px-3 md:py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-xs md:text-sm transition-colors">
+                    <button data-cmd="git branch" class="quick-cmd px-2 py-1 md:px-3 md:py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-xs md:text-sm">
                         branch
                     </button>
-                    <button data-cmd="git add ." class="quick-cmd px-2 py-1 md:px-3 md:py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-xs md:text-sm transition-colors">
+                    <button data-cmd="git add ." class="quick-cmd px-2 py-1 md:px-3 md:py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-xs md:text-sm">
                         add .
+                    </button>
+                    <button data-cmd="git init" class="quick-cmd px-2 py-1 md:px-3 md:py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-xs md:text-sm">
+                        init
+                    </button>
+                    <button data-cmd="git diff" class="quick-cmd px-2 py-1 md:px-3 md:py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-xs md:text-sm">
+                        diff
                     </button>
                 </div>
             </div>
@@ -187,20 +528,23 @@
         <!-- Footer -->
         <div class="mt-4 md:mt-6 text-center text-xs md:text-sm text-gray-500">
             <div class="flex flex-wrap justify-center gap-3 md:gap-6 mb-2">
-                <span class="flex items-center"><i class="fas fa-code-branch mr-1"></i> Git Simulation</span>
-                <span class="flex items-center"><i class="fas fa-play-circle mr-1"></i> Interactive</span>
-                <span class="flex items-center"><i class="fas fa-tasks mr-1"></i> Exercises</span>
+                <span class="flex items-center transition-colors hover:text-gray-300 cursor-default"><i class="fas fa-code-branch mr-1"></i> Git Simulation</span>
+                <span class="flex items-center transition-colors hover:text-gray-300 cursor-default"><i class="fas fa-play-circle mr-1"></i> Interactive</span>
+                <span class="flex items-center transition-colors hover:text-gray-300 cursor-default"><i class="fas fa-tasks mr-1"></i> Exercises</span>
             </div>
-            Practice Git commands safely in your browser
+            <p class="text-gray-600">Practice Git commands safely in your browser</p>
         </div>
     </div>
 
     <!-- Tutorial Modal -->
-    <div id="tutorial-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 px-3 md:px-0">
-        <div class="bg-gray-800 rounded-lg md:rounded-xl border border-gray-700 w-full max-w-2xl md:max-w-4xl mx-auto max-h-[90vh] md:max-h-[80vh] overflow-hidden">
-            <div class="flex items-center justify-between p-4 md:p-6 border-b border-gray-700">
-                <h3 class="text-lg md:text-xl font-semibold">Git Tutorial & Exercises</h3>
-                <button id="close-tutorial" class="text-gray-400 hover:text-white">
+    <div id="tutorial-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 px-3 md:px-0">
+        <div class="modal-content bg-gray-800 rounded-lg md:rounded-xl border border-gray-700 w-full max-w-2xl md:max-w-4xl mx-auto max-h-[90vh] md:max-h-[80vh] overflow-hidden shadow-2xl">
+            <div class="flex items-center justify-between p-4 md:p-6 border-b border-gray-700 bg-gray-900/50">
+                <h3 class="text-base sm:text-lg md:text-xl font-semibold flex items-center">
+                    <i class="fas fa-graduation-cap mr-2 text-green-400"></i>
+                    Git Tutorial & Exercises
+                </h3>
+                <button id="close-tutorial" class="btn-interactive text-gray-400 hover:text-white p-2 rounded-lg hover:bg-gray-700 transition-colors">
                     <i class="fas fa-times text-lg md:text-xl"></i>
                 </button>
             </div>
