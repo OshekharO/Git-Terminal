@@ -1,0 +1,30 @@
+{
+  "name": "git-terminal",
+  "version": "2.1.0",
+  "description": "An interactive, browser-based Git learning environment that simulates real Git commands without any server-side dependencies. Perfect for beginners learning Git or developers wanting to practice commands in a safe sandbox.",
+  "main": "script.js",
+  "scripts": {
+    "build:css": "postcss src/styles.css -o dist/styles.min.css",
+    "watch:css": "postcss src/styles.css -o dist/styles.min.css --watch",
+    "build": "npm run build:css",
+    "dev": "npm run watch:css"
+  },
+  "keywords": [
+    "git",
+    "terminal",
+    "learning",
+    "interactive",
+    "education",
+    "simulation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.17",
+    "autoprefixer": "^10.4.22",
+    "cssnano": "^7.1.2",
+    "postcss": "^8.5.6",
+    "postcss-cli": "^11.0.1",
+    "tailwindcss": "^4.1.17"
+  }
+}

@@ -228,6 +228,21 @@ const SYSTEM_COMMANDS = {
         usage: 'echo > <file> [content]',
         examples: ['echo > newfile.txt Hello World']
     },
+    nano: {
+        description: 'Edit file with nano text editor',
+        usage: 'nano <file>',
+        examples: ['nano README.md', 'nano newfile.txt']
+    },
+    vim: {
+        description: 'Edit file with vim text editor',
+        usage: 'vim <file>',
+        examples: ['vim README.md', 'vim script.js']
+    },
+    vi: {
+        description: 'Edit file with vi text editor (alias for vim)',
+        usage: 'vi <file>',
+        examples: ['vi README.md']
+    },
     touch: {
         description: 'Create or update file',
         usage: 'touch <file>',
@@ -247,6 +262,11 @@ const SYSTEM_COMMANDS = {
         description: 'Show available commands',
         usage: 'help',
         examples: ['help']
+    },
+    history: {
+        description: 'Show command history',
+        usage: 'history',
+        examples: ['history']
     }
 };
 
@@ -282,6 +302,13 @@ class GitTerminal {
         this.currentExercise = null;
         this.exerciseProgress = 0;
         this.completedExercises = new Set();
+        
+        // Editor state
+        this.currentEditingFile = null;
+        this.currentEditorType = null;
+        this.originalFileContent = null;
+        this.editorTextarea = null;
+        this.editorKeydownHandler = null;
         
         this.init();
     }
@@ -541,9 +568,13 @@ class GitTerminal {
             'cat': () => this.cat(args),
             'echo': () => this.echo(args),
             'touch': () => this.touch(args),
+            'nano': () => this.openEditor(args, 'nano'),
+            'vim': () => this.openEditor(args, 'vim'),
+            'vi': () => this.openEditor(args, 'vim'),
             'clear': () => this.clearOutput(),
             'exercise': () => this.startExercise(),
-            'help': () => this.showHelp()
+            'help': () => this.showHelp(),
+            'history': () => this.showHistory()
         };
 
         if (commandMap[command]) {
@@ -1195,6 +1226,199 @@ class GitTerminal {
         this.gitState.workingDirectory[filename].modified = true;
         this.writeSuccess(`Updated "${filename}"`);
         this.addSuccessFeedback();
+    }
+
+    // Text Editor Implementation (nano/vim simulation)
+    openEditor(args, editorType = 'nano') {
+        if (!args[0]) {
+            this.writeError(`usage: ${editorType} <file>`);
+            return;
+        }
+
+        const filename = args[0];
+        let file = this.gitState.workingDirectory[filename];
+        
+        // Create file if it doesn't exist
+        if (!file) {
+            this.gitState.workingDirectory[filename] = this.createFile('');
+            file = this.gitState.workingDirectory[filename];
+        }
+
+        this.currentEditingFile = filename;
+        this.currentEditorType = editorType;
+        this.originalFileContent = file.content;
+        
+        // Get editor elements
+        const modal = document.getElementById('editor-modal');
+        const textarea = document.getElementById('editor-textarea');
+        const filenameEl = document.getElementById('editor-filename');
+        const editorTypeEl = document.getElementById('editor-type');
+        const lineNumbers = document.getElementById('editor-line-numbers');
+        const cursorPos = document.getElementById('editor-cursor-pos');
+        const modifiedIndicator = document.getElementById('editor-modified');
+        const statusMsg = document.getElementById('editor-status-msg');
+        
+        // Set editor type display
+        if (editorType === 'vim') {
+            editorTypeEl.textContent = 'VIM';
+            editorTypeEl.className = 'text-green-400 font-semibold text-sm';
+        } else {
+            editorTypeEl.textContent = 'GNU nano';
+            editorTypeEl.className = 'text-green-400 font-semibold text-sm';
+        }
+        
+        // Set filename
+        filenameEl.textContent = filename;
+        
+        // Set content
+        textarea.value = file.content;
+        modifiedIndicator.classList.add('hidden');
+        statusMsg.textContent = '';
+        
+        // Update line numbers
+        this.updateLineNumbers(textarea, lineNumbers);
+        
+        // Show modal
+        modal.classList.remove('hidden');
+        textarea.focus();
+        
+        // Bind editor events
+        this.bindEditorEvents(textarea, lineNumbers, cursorPos, modifiedIndicator, statusMsg);
+        
+        this.writeLine(`Opening ${filename} with ${editorType}...`, 'text-gray-400');
+    }
+    
+    bindEditorEvents(textarea, lineNumbers, cursorPos, modifiedIndicator, statusMsg) {
+        const modal = document.getElementById('editor-modal');
+        
+        // Remove old listeners by cloning
+        const newTextarea = textarea.cloneNode(true);
+        textarea.parentNode.replaceChild(newTextarea, textarea);
+        textarea = newTextarea;
+        
+        // Store reference
+        this.editorTextarea = textarea;
+        
+        // Update line numbers on input
+        textarea.addEventListener('input', () => {
+            this.updateLineNumbers(textarea, lineNumbers);
+            modifiedIndicator.classList.remove('hidden');
+        });
+        
+        // Update cursor position
+        textarea.addEventListener('keyup', () => this.updateCursorPosition(textarea, cursorPos));
+        textarea.addEventListener('click', () => this.updateCursorPosition(textarea, cursorPos));
+        
+        // Scroll sync for line numbers
+        textarea.addEventListener('scroll', () => {
+            lineNumbers.scrollTop = textarea.scrollTop;
+        });
+        
+        // Handle keyboard shortcuts
+        const keydownHandler = (e) => {
+            // Ctrl+S or Ctrl+O to save
+            if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'o')) {
+                e.preventDefault();
+                this.saveEditorContent(textarea, statusMsg, modifiedIndicator);
+            }
+            // Escape or Ctrl+X to exit
+            else if (e.key === 'Escape' || ((e.ctrlKey || e.metaKey) && e.key === 'x')) {
+                e.preventDefault();
+                this.closeEditor(modal);
+            }
+            // Tab for indentation
+            else if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = textarea.selectionStart;
+                const end = textarea.selectionEnd;
+                textarea.value = textarea.value.substring(0, start) + '    ' + textarea.value.substring(end);
+                textarea.selectionStart = textarea.selectionEnd = start + 4;
+                this.updateLineNumbers(textarea, lineNumbers);
+                modifiedIndicator.classList.remove('hidden');
+            }
+        };
+        
+        textarea.addEventListener('keydown', keydownHandler);
+        
+        // Store handler for cleanup
+        this.editorKeydownHandler = keydownHandler;
+        
+        // Initial cursor position
+        this.updateCursorPosition(textarea, cursorPos);
+    }
+    
+    updateLineNumbers(textarea, lineNumbers) {
+        const lines = textarea.value.split('\n').length;
+        let lineNumbersHtml = '';
+        for (let i = 1; i <= Math.max(lines, 20); i++) {
+            lineNumbersHtml += i + '\n';
+        }
+        lineNumbers.textContent = lineNumbersHtml.trim();
+    }
+    
+    updateCursorPosition(textarea, cursorPos) {
+        const text = textarea.value.substring(0, textarea.selectionStart);
+        const lines = text.split('\n');
+        const line = lines.length;
+        const col = lines[lines.length - 1].length + 1;
+        cursorPos.textContent = `Line ${line}, Col ${col}`;
+    }
+    
+    saveEditorContent(textarea, statusMsg, modifiedIndicator) {
+        const content = textarea.value;
+        const filename = this.currentEditingFile;
+        
+        if (this.gitState.workingDirectory[filename]) {
+            this.gitState.workingDirectory[filename].content = content;
+            this.gitState.workingDirectory[filename].modified = true;
+            
+            modifiedIndicator.classList.add('hidden');
+            statusMsg.textContent = `Saved "${filename}"`;
+            statusMsg.className = 'text-green-400';
+            
+            setTimeout(() => {
+                statusMsg.textContent = '';
+            }, 2000);
+        }
+    }
+    
+    closeEditor(modal) {
+        const textarea = this.editorTextarea;
+        const filename = this.currentEditingFile;
+        
+        // Check if content was modified
+        if (textarea && this.gitState.workingDirectory[filename]) {
+            const currentContent = textarea.value;
+            if (currentContent !== this.originalFileContent) {
+                // Auto-save on close
+                this.gitState.workingDirectory[filename].content = currentContent;
+                this.gitState.workingDirectory[filename].modified = true;
+                this.writeSuccess(`File "${filename}" saved and closed`);
+            } else {
+                this.writeLine(`Closed ${filename}`, 'text-gray-400');
+            }
+        }
+        
+        modal.classList.add('hidden');
+        this.currentEditingFile = null;
+        this.currentEditorType = null;
+        this.originalFileContent = null;
+        
+        // Refocus terminal input
+        this.cmdLine.focus();
+    }
+    
+    // Command history display
+    showHistory() {
+        if (this.history.length === 0) {
+            this.writeLine('No commands in history', 'text-gray-400');
+            return;
+        }
+        
+        this.writeLine('Command history:', 'text-blue-400');
+        this.history.forEach((cmd, index) => {
+            this.writeLine(`  ${(index + 1).toString().padStart(4)}  ${cmd}`, 'text-gray-300');
+        });
     }
 
     showHelp() {

@@ -28,8 +28,11 @@ An interactive, browser-based Git learning environment that simulates real Git c
 - Remote repository simulation
 - Configuration management
 - File system operations (ls, cat, touch, echo)
+- Built-in text editor (nano/vim simulation)
 
 ## 🚀 Quick Start
+
+### Option 1: Use Pre-built CSS (Recommended)
 
 Simply open `index.html` in any modern web browser - no installation required!
 
@@ -43,7 +46,30 @@ start index.html # Windows
 xdg-open index.html # Linux
 ```
 
-Or try it online by opening the `index.html` file directly.
+### Option 2: Build from Source
+
+If you want to modify the styles or contribute to the project:
+
+```bash
+# Clone the repository
+git clone https://github.com/OshekharO/Git-Terminal.git
+cd Git-Terminal
+
+# Install dependencies
+npm install
+
+# Build CSS (includes Tailwind, autoprefixer, and cssnano)
+npm run build
+
+# For development (watches for changes)
+npm run dev
+```
+
+The build process:
+- Compiles Tailwind CSS utilities
+- Adds vendor prefixes with Autoprefixer
+- Minifies CSS with cssnano
+- Outputs to `dist/styles.min.css`
 
 ## 📖 Available Commands
 
@@ -83,9 +109,29 @@ Or try it online by opening the `index.html` file directly.
 | `cat <file>` | Display file contents |
 | `touch <file>` | Create or update file |
 | `echo > <file> <content>` | Create file with content |
+| `nano <file>` | Edit file with nano editor |
+| `vim <file>` | Edit file with vim editor |
+| `vi <file>` | Edit file with vi (alias for vim) |
+| `history` | Show command history |
 | `clear` | Clear terminal output |
 | `exercise` | Start guided exercises |
 | `help` | Show available commands |
+
+## ⌨️ Keyboard Shortcuts
+
+### Terminal
+| Shortcut | Action |
+|----------|--------|
+| `↑` / `↓` | Navigate command history |
+| `Tab` | Auto-complete commands/filenames |
+| `Enter` | Execute command |
+
+### Text Editor (nano/vim)
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+S` or `Ctrl+O` | Save file |
+| `Ctrl+X` or `Esc` | Exit editor |
+| `Tab` | Insert 4 spaces |
 
 ## 🎓 Exercises
 
