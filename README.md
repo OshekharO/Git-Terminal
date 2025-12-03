@@ -32,9 +32,7 @@ An interactive, browser-based Git learning environment that simulates real Git c
 
 ## 🚀 Quick Start
 
-### Option 1: Use Pre-built CSS (Recommended)
-
-Simply open `index.html` in any modern web browser - no installation required!
+Simply open `index.html` in any modern web browser - no build step required!
 
 ```bash
 # Clone the repository
@@ -46,30 +44,9 @@ start index.html # Windows
 xdg-open index.html # Linux
 ```
 
-### Option 2: Build from Source
-
-If you want to modify the styles or contribute to the project:
-
-```bash
-# Clone the repository
-git clone https://github.com/OshekharO/Git-Terminal.git
-cd Git-Terminal
-
-# Install dependencies
-npm install
-
-# Build CSS (includes Tailwind, autoprefixer, and cssnano)
-npm run build
-
-# For development (watches for changes)
-npm run dev
-```
-
-The build process:
-- Compiles Tailwind CSS utilities
-- Adds vendor prefixes with Autoprefixer
-- Minifies CSS with cssnano
-- Outputs to `dist/styles.min.css`
+The application uses:
+- [Tailwind CSS CDN](https://tailwindcss.com/docs/installation/play-cdn) for utility classes
+- Custom CSS in `src/styles.css` for terminal-specific styling
 
 ## 📖 Available Commands
 
@@ -216,7 +193,7 @@ The terminal is fully responsive with breakpoints at:
 
 ### Color Palette
 
-Colors are defined as CSS custom properties in `index.html`:
+Colors are defined as CSS custom properties in `src/styles.css`:
 
 ```css
 :root {
