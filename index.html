@@ -70,7 +70,7 @@
                 <!-- Input Area -->
                 <div class="input-container flex items-center space-x-2 md:space-x-3 bg-gray-800 rounded-lg px-2 py-2 sm:px-3 sm:py-2 md:px-4 md:py-3">
                     <div id="prompt" class="prompt-text text-green-400 font-medium whitespace-nowrap text-xs sm:text-sm md:text-base flex-shrink-0">
-                        <span class="hidden sm:inline">git-practice</span><span class="sm:hidden">$</span> <span id="branch-indicator"></span><span class="hidden sm:inline text-blue-400">:~</span>$ 
+                        <span class="hidden sm:inline">git-practice</span><span id="branch-indicator"></span><span class="hidden sm:inline text-blue-400">:~</span>$ 
                     </div>
                     <input 
                         id="cmdline" 
@@ -138,32 +138,32 @@
     </div>
 
     <!-- Text Editor Modal (nano/vim simulation) -->
-    <div id="editor-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center hidden z-50 px-2 md:px-0">
-        <div class="modal-content bg-gray-900 rounded-lg border border-gray-600 w-full max-w-4xl mx-auto max-h-[95vh] overflow-hidden shadow-2xl flex flex-col">
+    <div id="editor-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center hidden z-50 px-2 sm:px-4 md:px-0">
+        <div class="modal-content bg-gray-900 rounded-lg border border-gray-600 w-full max-w-4xl mx-auto max-h-[90vh] sm:max-h-[95vh] overflow-hidden shadow-2xl flex flex-col">
             <!-- Editor Header -->
-            <div id="editor-header" class="flex items-center justify-between px-3 py-2 bg-gray-800 border-b border-gray-700">
-                <div class="flex items-center space-x-3">
-                    <span id="editor-type" class="text-green-400 font-semibold text-sm">GNU nano</span>
-                    <span id="editor-filename" class="text-gray-300 text-sm">filename.txt</span>
-                    <span id="editor-modified" class="text-yellow-400 text-xs hidden">[Modified]</span>
+            <div id="editor-header" class="flex items-center justify-between px-2 sm:px-3 py-2 bg-gray-800 border-b border-gray-700">
+                <div class="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+                    <span id="editor-type" class="text-green-400 font-semibold text-xs sm:text-sm flex-shrink-0">GNU nano</span>
+                    <span id="editor-filename" class="text-gray-300 text-xs sm:text-sm truncate">filename.txt</span>
+                    <span id="editor-modified" class="text-yellow-400 text-xs hidden flex-shrink-0">[Modified]</span>
                 </div>
-                <div class="text-gray-500 text-xs">
-                    <span class="hidden sm:inline">Press </span><kbd class="px-1 py-0.5 bg-gray-700 rounded text-xs">Ctrl+S</kbd> save <span class="hidden sm:inline">| </span><kbd class="px-1 py-0.5 bg-gray-700 rounded text-xs ml-1">Esc</kbd> exit
+                <div class="text-gray-500 text-xs flex-shrink-0 ml-2">
+                    <span class="hidden sm:inline">Press </span><kbd class="px-1 py-0.5 bg-gray-700 rounded text-xs">Ctrl+S</kbd><span class="hidden xs:inline"> save</span><span class="hidden sm:inline"> | </span><kbd class="px-1 py-0.5 bg-gray-700 rounded text-xs ml-1">Esc</kbd><span class="hidden xs:inline"> exit</span>
                 </div>
             </div>
             
             <!-- Editor Content Area -->
-            <div class="flex-1 p-0 overflow-hidden">
+            <div class="flex-1 p-0 overflow-hidden min-h-0">
                 <div class="flex h-full">
                     <!-- Line numbers -->
-                    <div id="editor-line-numbers" class="bg-gray-800 text-gray-500 text-right py-2 px-2 text-xs sm:text-sm font-mono select-none border-r border-gray-700 overflow-hidden" style="min-width: 3rem;">
+                    <div id="editor-line-numbers" class="bg-gray-800 text-gray-500 text-right py-2 px-1 sm:px-2 text-xs sm:text-sm font-mono select-none border-r border-gray-700 overflow-hidden flex-shrink-0" style="min-width: 2.5rem;">
                         1
                     </div>
                     <!-- Text area -->
                     <textarea 
                         id="editor-textarea" 
-                        class="flex-1 bg-gray-900 text-gray-100 p-2 text-xs sm:text-sm font-mono resize-none outline-none border-none"
-                        style="min-height: 300px; max-height: 60vh;"
+                        class="flex-1 bg-gray-900 text-gray-100 p-2 text-sm sm:text-base font-mono resize-none outline-none border-none min-h-0"
+                        style="min-height: 200px; height: 100%;"
                         spellcheck="false"
                         autocomplete="off"
                         autocorrect="off"
@@ -172,20 +172,20 @@
                 </div>
             </div>
             
-            <!-- Editor Footer (nano style) -->
+            <!-- Editor Footer (nano style) - hide some options on very small screens -->
             <div id="editor-footer" class="bg-gray-800 border-t border-gray-700 px-2 py-1.5">
-                <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-400">
-                    <span><kbd class="text-white">^G</kbd> Help</span>
-                    <span><kbd class="text-white">^O</kbd> Write Out</span>
+                <div class="flex flex-wrap gap-x-3 sm:gap-x-4 gap-y-1 text-xs text-gray-400">
+                    <span class="hidden sm:inline"><kbd class="text-white">^G</kbd> Help</span>
+                    <span><kbd class="text-white">^O</kbd> Save</span>
                     <span><kbd class="text-white">^X</kbd> Exit</span>
-                    <span><kbd class="text-white">^K</kbd> Cut</span>
-                    <span><kbd class="text-white">^U</kbd> Paste</span>
-                    <span><kbd class="text-white">^W</kbd> Where Is</span>
+                    <span class="hidden sm:inline"><kbd class="text-white">^K</kbd> Cut</span>
+                    <span class="hidden sm:inline"><kbd class="text-white">^U</kbd> Paste</span>
+                    <span class="hidden md:inline"><kbd class="text-white">^W</kbd> Where Is</span>
                 </div>
             </div>
             
             <!-- Status bar -->
-            <div id="editor-status" class="bg-gray-700 px-3 py-1 text-xs text-gray-300 flex justify-between">
+            <div id="editor-status" class="bg-gray-700 px-2 sm:px-3 py-1 text-xs text-gray-300 flex justify-between">
                 <span id="editor-cursor-pos">Line 1, Col 1</span>
                 <span id="editor-status-msg" class="text-green-400"></span>
             </div>
