@@ -430,6 +430,13 @@ html, body {
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  line-height: 1.5;
+}
+
+/* Editor line numbers - display vertically */
+#editor-line-numbers {
+  white-space: pre;
+  line-height: 1.5;
 }
 
 /* Mobile editor adjustments */
@@ -459,16 +466,6 @@ html, body {
   #editor-textarea {
     font-size: 16px; /* Prevents iOS zoom on focus */
   }
-}
-
-/* Editor line numbers - display vertically */
-#editor-line-numbers {
-  white-space: pre;
-  line-height: 1.5;
-}
-
-#editor-textarea {
-  line-height: 1.5;
 }
 
 /* Editor action buttons for mobile */
