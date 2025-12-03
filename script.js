@@ -12,6 +12,7 @@
 const DEFAULT_USER_NAME = 'Git Learner';
 const DEFAULT_USER_EMAIL = 'learner@example.com';
 const DEFAULT_BRANCH = 'main';
+const MIN_EDITOR_LINES = 20;
 
 // =============================================================================
 // EXTENSIBLE DATA STRUCTURES
@@ -523,9 +524,14 @@ class GitTerminal {
     }
     
     escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
+        const htmlEscapes = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        };
+        return text.replace(/[&<>"']/g, char => htmlEscapes[char]);
     }
 
     executeGitCommand(args) {
@@ -1350,7 +1356,7 @@ class GitTerminal {
     updateLineNumbers(textarea, lineNumbers) {
         const lines = textarea.value.split('\n').length;
         let lineNumbersHtml = '';
-        for (let i = 1; i <= Math.max(lines, 20); i++) {
+        for (let i = 1; i <= Math.max(lines, MIN_EDITOR_LINES); i++) {
             lineNumbersHtml += i + '\n';
         }
         lineNumbers.textContent = lineNumbersHtml.trim();
