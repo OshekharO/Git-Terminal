@@ -419,3 +419,44 @@ html, body {
 .error-feedback {
   animation: errorShake 0.3s ease-out;
 }
+
+/* Editor modal mobile styles */
+#editor-modal .modal-content {
+  display: flex;
+  flex-direction: column;
+}
+
+#editor-textarea {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Mobile editor adjustments */
+@media (max-width: 479px) {
+  #editor-modal .modal-content {
+    max-height: 85vh;
+    margin: var(--space-sm);
+    border-radius: var(--radius-md);
+  }
+  
+  #editor-textarea {
+    font-size: 16px; /* Prevents iOS zoom on focus */
+    min-height: 150px;
+  }
+  
+  #editor-line-numbers {
+    min-width: 2rem;
+    padding: var(--space-sm) var(--space-xs);
+  }
+}
+
+@media (min-width: 480px) and (max-width: 767px) {
+  #editor-modal .modal-content {
+    max-height: 88vh;
+  }
+  
+  #editor-textarea {
+    font-size: 16px; /* Prevents iOS zoom on focus */
+  }
+}
