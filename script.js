@@ -1304,12 +1304,19 @@ class GitTerminal {
                 return;
             }
 
+            // Parse stash message - handle both "push -m" and just "-m" options
+            let stashMessage = `WIP on ${this.gitState.currentBranch}`;
+            const mFlagIndex = args.indexOf('-m');
+            if (mFlagIndex !== -1 && args[mFlagIndex + 1]) {
+                stashMessage = args.slice(mFlagIndex + 1).join(' ').replace(/^["']|["']$/g, '');
+            }
+
             const stashEntry = {
                 id: this.gitState.stash.length,
                 branch: this.gitState.currentBranch,
                 files: modifiedFiles,
                 stagingArea: [...this.gitState.stagingArea],
-                message: args[1] === '-m' && args[2] ? args.slice(2).join(' ').replace(/["']/g, '') : `WIP on ${this.gitState.currentBranch}`,
+                message: stashMessage,
                 timestamp: new Date()
             };
 
@@ -1338,21 +1345,24 @@ class GitTerminal {
                 return;
             }
 
-            const stashIdx = args[1] ? parseInt(args[1].replace('stash@{', '').replace('}', '')) : this.gitState.stash.length - 1;
-            const stashEntry = this.gitState.stash[stashIdx];
-
-            if (!stashEntry) {
-                this.writeError(`error: stash@{${stashIdx}} is not a valid reference`);
+            const stashIdx = args[1] ? parseInt(args[1].replace(/stash@\{/g, '').replace(/\}/g, ''), 10) : this.gitState.stash.length - 1;
+            
+            if (isNaN(stashIdx) || stashIdx < 0 || stashIdx >= this.gitState.stash.length) {
+                this.writeError(`error: stash@{${args[1] || stashIdx}} is not a valid reference`);
                 return;
             }
+            
+            const stashEntry = this.gitState.stash[stashIdx];
 
-            // Restore files from stash
+            // Restore files from stash (recreate if deleted)
             stashEntry.files.forEach(savedFile => {
-                if (this.gitState.workingDirectory[savedFile.name]) {
-                    this.gitState.workingDirectory[savedFile.name].content = savedFile.content;
-                    this.gitState.workingDirectory[savedFile.name].modified = savedFile.modified;
-                    this.gitState.workingDirectory[savedFile.name].staged = savedFile.staged;
+                if (!this.gitState.workingDirectory[savedFile.name]) {
+                    // Recreate the file if it was deleted
+                    this.gitState.workingDirectory[savedFile.name] = this.createFile(savedFile.content);
                 }
+                this.gitState.workingDirectory[savedFile.name].content = savedFile.content;
+                this.gitState.workingDirectory[savedFile.name].modified = savedFile.modified;
+                this.gitState.workingDirectory[savedFile.name].staged = savedFile.staged;
             });
             this.gitState.stagingArea = [...stashEntry.stagingArea];
 
@@ -1371,14 +1381,15 @@ class GitTerminal {
                 return;
             }
 
-            const stashIdx = args[1] ? parseInt(args[1].replace('stash@{', '').replace('}', '')) : this.gitState.stash.length - 1;
+            const stashIdx = args[1] ? parseInt(args[1].replace(/stash@\{/g, '').replace(/\}/g, ''), 10) : this.gitState.stash.length - 1;
             
-            if (stashIdx >= 0 && stashIdx < this.gitState.stash.length) {
-                this.gitState.stash.splice(stashIdx, 1);
-                this.writeSuccess(`Dropped stash@{${stashIdx}}`);
-            } else {
-                this.writeError(`error: stash@{${stashIdx}} is not a valid reference`);
+            if (isNaN(stashIdx) || stashIdx < 0 || stashIdx >= this.gitState.stash.length) {
+                this.writeError(`error: stash@{${args[1] || stashIdx}} is not a valid reference`);
+                return;
             }
+            
+            this.gitState.stash.splice(stashIdx, 1);
+            this.writeSuccess(`Dropped stash@{${stashIdx}}`);
         } else if (args[0] === 'clear') {
             this.gitState.stash = [];
             this.writeSuccess('Cleared all stash entries');
