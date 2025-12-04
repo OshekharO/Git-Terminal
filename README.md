@@ -64,14 +64,23 @@ The application uses:
 | `git log --oneline` | Compact commit history |
 | `git branch` | List branches |
 | `git branch <name>` | Create new branch |
+| `git branch -d <name>` | Delete a branch |
 | `git checkout <branch>` | Switch branches |
 | `git checkout -b <name>` | Create and switch to branch |
+| `git switch <branch>` | Switch branches (modern) |
 | `git merge <branch>` | Merge branch into current |
 | `git diff` | Show changes |
 | `git remote add <name> <url>` | Add remote repository |
 | `git remote -v` | List remotes |
 | `git push <remote> <branch>` | Push to remote |
 | `git pull` | Pull from remote |
+| `git fetch` | Download remote changes |
+| `git stash` | Save changes temporarily |
+| `git stash list` | List stashed changes |
+| `git stash pop` | Restore stashed changes |
+| `git stash drop` | Delete a stash |
+| `git restore <file>` | Discard file changes |
+| `git restore --staged <file>` | Unstage a file |
 | `git config --global <key> <value>` | Set configuration |
 | `git config --list` | Show configuration |
 | `git reset --hard` | Discard all changes |
@@ -112,16 +121,35 @@ The application uses:
 
 ## 🎓 Exercises
 
-The terminal includes 8 progressive exercises:
+The terminal includes 23 progressive exercises organized by difficulty:
 
-1. **Configure Git User** (Beginner) - Set up your name and email
-2. **Initialize Repository** (Beginner) - Create a new Git repo
-3. **Stage Files** (Beginner) - Add files to staging area
-4. **First Commit** (Beginner) - Make your first commit
-5. **Create Branch** (Intermediate) - Create and switch branches
-6. **Add Remote** (Intermediate) - Connect to a remote repository
-7. **Multiple Commits** (Intermediate) - Create a commit history
-8. **Merge Branch** (Advanced) - Merge branches together
+### Beginner (8 exercises)
+1. **Configure Git User** - Set up your name and email
+2. **Initialize Repository** - Create a new Git repo
+3. **Check Repository Status** - Use git status
+4. **Create a New File** - Use touch or echo commands
+5. **Stage Files** - Add files to staging area
+6. **First Commit** - Make your first commit
+7. **View Commit History** - Use git log
+8. **List Directory Contents** - Use ls command
+
+### Intermediate (11 exercises)
+9. **Create a New Branch** - Create feature branches
+10. **Switch Between Branches** - Navigate branches
+11. **Create and Switch in One Command** - Use checkout -b
+12. **Add Remote Repository** - Connect to GitHub
+13. **View Remote Repositories** - List configured remotes
+14. **Push to Remote** - Push commits to remote
+15. **View Changes with Diff** - Compare file changes
+16. **Build a Commit History** - Make multiple commits
+17. **Delete a Branch** - Clean up old branches
+18. **Edit a File** - Use nano or vim
+
+### Advanced (4 exercises)
+19. **Merge a Branch** - Merge feature branches
+20. **Reset Changes** - Discard uncommitted changes
+21. **Clone a Repository** - Clone from URL
+22. **Complete Feature Workflow** - Full feature branch workflow
 
 Type `exercise` to start the guided learning path!
 

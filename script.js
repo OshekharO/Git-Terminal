@@ -30,10 +30,11 @@ const MIN_EDITOR_LINES = 20;
  * - category: grouping category
  */
 const EXERCISES = [
+    // ===== BEGINNER EXERCISES =====
     {
         id: 'config-user',
         title: 'Configure Git User',
-        desc: 'Configure your Git user name and email',
+        desc: 'Configure your Git user name and email (required before committing)',
         hint: 'Use: git config --global user.name "Your Name" and git config --global user.email "your@email.com"',
         difficulty: 'beginner',
         category: 'setup',
@@ -42,17 +43,35 @@ const EXERCISES = [
     {
         id: 'init-repo',
         title: 'Initialize Repository',
-        desc: 'Initialize a new Git repository',
-        hint: 'Use: git init',
+        desc: 'Initialize a new Git repository in the current directory',
+        hint: 'Use: git init - This creates a .git folder to track your changes',
         difficulty: 'beginner',
         category: 'setup',
         check: (state) => state.currentRepo !== null
     },
     {
+        id: 'check-status',
+        title: 'Check Repository Status',
+        desc: 'Use git status to see the current state of your repository',
+        hint: 'Use: git status - This shows untracked, modified, and staged files',
+        difficulty: 'beginner',
+        category: 'basics',
+        check: (state, history) => history && history.some(cmd => cmd.includes('git status'))
+    },
+    {
+        id: 'create-file',
+        title: 'Create a New File',
+        desc: 'Create a new file using touch or echo command',
+        hint: 'Use: touch myfile.txt or echo > myfile.txt "Hello World"',
+        difficulty: 'beginner',
+        category: 'basics',
+        check: (state) => Object.keys(state.workingDirectory).length > 4
+    },
+    {
         id: 'add-files',
         title: 'Stage Files',
-        desc: 'Add all files to staging area',
-        hint: 'Use: git add . or git add <filename>',
+        desc: 'Add files to the staging area before committing',
+        hint: 'Use: git add <filename> for specific files or git add . for all files',
         difficulty: 'beginner',
         category: 'basics',
         check: (state) => state.stagingArea.length > 0
@@ -60,47 +79,161 @@ const EXERCISES = [
     {
         id: 'first-commit',
         title: 'First Commit',
-        desc: 'Make your first commit',
-        hint: 'Use: git commit -m "Initial commit"',
+        desc: 'Make your first commit with a descriptive message',
+        hint: 'Use: git commit -m "Initial commit" - Always write clear commit messages',
         difficulty: 'beginner',
         category: 'basics',
         check: (state) => state.commits.length > 0
     },
     {
+        id: 'view-log',
+        title: 'View Commit History',
+        desc: 'View your commit history using git log',
+        hint: 'Use: git log or git log --oneline for a compact view',
+        difficulty: 'beginner',
+        category: 'basics',
+        check: (state, history) => history && history.some(cmd => cmd.includes('git log'))
+    },
+    {
+        id: 'list-files',
+        title: 'List Directory Contents',
+        desc: 'Use ls to see all files in your working directory',
+        hint: 'Use: ls - This shows all files that Git can track',
+        difficulty: 'beginner',
+        category: 'basics',
+        check: (state, history) => history && history.some(cmd => cmd === 'ls')
+    },
+    
+    // ===== INTERMEDIATE EXERCISES =====
+    {
         id: 'create-branch',
-        title: 'Create Branch',
-        desc: 'Create and switch to a new branch',
-        hint: 'Use: git branch new-feature then git checkout new-feature, or git checkout -b new-feature',
+        title: 'Create a New Branch',
+        desc: 'Create a new branch for feature development',
+        hint: 'Use: git branch feature-name to create a branch',
+        difficulty: 'intermediate',
+        category: 'branching',
+        check: (state) => state.branches.length > 1
+    },
+    {
+        id: 'switch-branch',
+        title: 'Switch Between Branches',
+        desc: 'Switch to your newly created branch',
+        hint: 'Use: git checkout branch-name or git switch branch-name',
         difficulty: 'intermediate',
         category: 'branching',
         check: (state) => state.branches.length > 1 && state.currentBranch !== 'main'
     },
     {
+        id: 'checkout-create',
+        title: 'Create and Switch in One Command',
+        desc: 'Create a new branch and switch to it in one step',
+        hint: 'Use: git checkout -b new-branch-name - This is a common shortcut',
+        difficulty: 'intermediate',
+        category: 'branching',
+        check: (state) => state.branches.length >= 2
+    },
+    {
         id: 'add-remote',
-        title: 'Add Remote',
-        desc: 'Add a remote repository called "origin"',
-        hint: 'Use: git remote add origin https://github.com/user/repo.git',
+        title: 'Add Remote Repository',
+        desc: 'Connect your local repo to a remote repository (like GitHub)',
+        hint: 'Use: git remote add origin https://github.com/username/repo.git',
         difficulty: 'intermediate',
         category: 'collaboration',
         check: (state) => Object.keys(state.remoteRepos).length > 0
     },
     {
+        id: 'view-remotes',
+        title: 'View Remote Repositories',
+        desc: 'List all configured remote repositories',
+        hint: 'Use: git remote -v to see remotes with their URLs',
+        difficulty: 'intermediate',
+        category: 'collaboration',
+        check: (state, history) => history && history.some(cmd => cmd.includes('git remote -v'))
+    },
+    {
+        id: 'push-changes',
+        title: 'Push to Remote',
+        desc: 'Push your local commits to the remote repository',
+        hint: 'Use: git push origin main (or your current branch name)',
+        difficulty: 'intermediate',
+        category: 'collaboration',
+        check: (state, history) => history && history.some(cmd => cmd.includes('git push'))
+    },
+    {
+        id: 'view-diff',
+        title: 'View Changes with Diff',
+        desc: 'Use git diff to see what changes you have made',
+        hint: 'Use: git diff to see unstaged changes, git diff --staged for staged changes',
+        difficulty: 'intermediate',
+        category: 'workflow',
+        check: (state, history) => history && history.some(cmd => cmd.includes('git diff'))
+    },
+    {
         id: 'multiple-commits',
-        title: 'Multiple Commits',
-        desc: 'Make at least 3 commits in your repository',
-        hint: 'Create files with touch, add them with git add, then commit with git commit -m "message"',
+        title: 'Build a Commit History',
+        desc: 'Make at least 3 commits to build a proper history',
+        hint: 'Create files with touch, stage with git add, commit with git commit -m "message"',
         difficulty: 'intermediate',
         category: 'workflow',
         check: (state) => state.commits.length >= 3
     },
     {
+        id: 'delete-branch',
+        title: 'Delete a Branch',
+        desc: 'Delete a branch that you no longer need',
+        hint: 'Use: git branch -d branch-name (switch to another branch first)',
+        difficulty: 'intermediate',
+        category: 'branching',
+        check: (state, history) => history && history.some(cmd => cmd.includes('git branch -d'))
+    },
+    {
+        id: 'edit-file',
+        title: 'Edit a File',
+        desc: 'Use nano or vim to edit an existing file',
+        hint: 'Use: nano README.md or vim README.md to edit files',
+        difficulty: 'intermediate',
+        category: 'workflow',
+        check: (state) => Object.values(state.workingDirectory).some(f => f.modified)
+    },
+    
+    // ===== ADVANCED EXERCISES =====
+    {
         id: 'merge-branch',
-        title: 'Merge Branch',
-        desc: 'Merge a feature branch into main',
-        hint: 'First checkout main, then use: git merge feature-branch',
+        title: 'Merge a Branch',
+        desc: 'Merge a feature branch into main branch',
+        hint: 'First checkout main with git checkout main, then git merge feature-branch',
         difficulty: 'advanced',
         category: 'branching',
         check: (state) => state.commits.some(c => c.message.toLowerCase().includes('merge'))
+    },
+    {
+        id: 'reset-hard',
+        title: 'Reset Changes',
+        desc: 'Discard all uncommitted changes using reset',
+        hint: 'Use: git reset --hard to discard all changes (be careful with this!)',
+        difficulty: 'advanced',
+        category: 'undoing',
+        check: (state, history) => history && history.some(cmd => cmd.includes('git reset --hard'))
+    },
+    {
+        id: 'clone-repo',
+        title: 'Clone a Repository',
+        desc: 'Clone an existing repository from a URL',
+        hint: 'Use: git clone https://github.com/user/repo.git',
+        difficulty: 'advanced',
+        category: 'collaboration',
+        check: (state, history) => history && history.some(cmd => cmd.includes('git clone'))
+    },
+    {
+        id: 'complete-workflow',
+        title: 'Complete Feature Workflow',
+        desc: 'Complete a full feature workflow: create branch, make changes, commit, merge',
+        hint: 'Create a feature branch, make commits, switch to main, and merge your feature',
+        difficulty: 'advanced',
+        category: 'workflow',
+        check: (state) => state.commits.length >= 4 && 
+                         state.commits.some(c => c.message.toLowerCase().includes('merge')) &&
+                         state.branches.length >= 2
     }
 ];
 
@@ -115,21 +248,28 @@ const TUTORIALS = {
         color: 'green',
         sections: [
             {
-                title: 'Repository Setup',
+                title: 'First Time Setup',
                 commands: [
-                    { cmd: 'git init', desc: 'Create a new Git repository' },
-                    { cmd: 'git clone <url>', desc: 'Clone a repository from URL' },
-                    { cmd: 'git config --global user.name "Name"', desc: 'Set your username' },
-                    { cmd: 'git config --global user.email "email"', desc: 'Set your email' }
+                    { cmd: 'git config --global user.name "Your Name"', desc: 'Set your username (required)' },
+                    { cmd: 'git config --global user.email "you@email.com"', desc: 'Set your email (required)' },
+                    { cmd: 'git config --list', desc: 'View all configuration settings' }
+                ]
+            },
+            {
+                title: 'Creating a Repository',
+                commands: [
+                    { cmd: 'git init', desc: 'Create a new Git repository in current folder' },
+                    { cmd: 'git clone <url>', desc: 'Clone existing repository from URL' },
+                    { cmd: 'git status', desc: 'Check current repository status' }
                 ]
             },
             {
                 title: 'Basic Workflow',
                 commands: [
-                    { cmd: 'git add <file>', desc: 'Stage specific file' },
-                    { cmd: 'git add .', desc: 'Stage all changes' },
-                    { cmd: 'git commit -m "message"', desc: 'Commit staged changes' },
-                    { cmd: 'git status', desc: 'Check repository status' }
+                    { cmd: 'git add <file>', desc: 'Stage a specific file for commit' },
+                    { cmd: 'git add .', desc: 'Stage all changed files' },
+                    { cmd: 'git commit -m "message"', desc: 'Commit staged changes with message' },
+                    { cmd: 'git log --oneline', desc: 'View commit history (compact)' }
                 ]
             }
         ]
@@ -140,20 +280,21 @@ const TUTORIALS = {
         color: 'yellow',
         sections: [
             {
-                title: 'Branch Operations',
+                title: 'Working with Branches',
                 commands: [
-                    { cmd: 'git branch', desc: 'List all branches' },
-                    { cmd: 'git branch <name>', desc: 'Create new branch' },
-                    { cmd: 'git checkout <branch>', desc: 'Switch to branch' },
-                    { cmd: 'git checkout -b <branch>', desc: 'Create and switch' },
-                    { cmd: 'git branch -d <branch>', desc: 'Delete branch' }
+                    { cmd: 'git branch', desc: 'List all local branches' },
+                    { cmd: 'git branch <name>', desc: 'Create a new branch' },
+                    { cmd: 'git checkout <branch>', desc: 'Switch to a branch' },
+                    { cmd: 'git checkout -b <branch>', desc: 'Create and switch to new branch' },
+                    { cmd: 'git switch <branch>', desc: 'Modern way to switch branches' }
                 ]
             },
             {
-                title: 'Merging',
+                title: 'Merging Branches',
                 commands: [
-                    { cmd: 'git merge <branch>', desc: 'Merge branch into current' },
-                    { cmd: 'git merge --abort', desc: 'Abort merge in progress' }
+                    { cmd: 'git merge <branch>', desc: 'Merge branch into current branch' },
+                    { cmd: 'git branch -d <branch>', desc: 'Delete a merged branch' },
+                    { cmd: 'git branch -D <branch>', desc: 'Force delete a branch' }
                 ]
             }
         ]
@@ -164,12 +305,20 @@ const TUTORIALS = {
         color: 'blue',
         sections: [
             {
-                title: 'Viewing History',
+                title: 'Viewing Commit History',
                 commands: [
-                    { cmd: 'git log', desc: 'Show commit history' },
-                    { cmd: 'git log --oneline', desc: 'Compact history view' },
+                    { cmd: 'git log', desc: 'Show full commit history' },
+                    { cmd: 'git log --oneline', desc: 'Compact one-line format' },
+                    { cmd: 'git log --graph', desc: 'Show branch graph' },
+                    { cmd: 'git log -n 5', desc: 'Show last 5 commits' }
+                ]
+            },
+            {
+                title: 'Viewing Changes',
+                commands: [
                     { cmd: 'git diff', desc: 'Show unstaged changes' },
-                    { cmd: 'git diff --staged', desc: 'Show staged changes' }
+                    { cmd: 'git diff --staged', desc: 'Show staged changes' },
+                    { cmd: 'git diff <branch1> <branch2>', desc: 'Compare two branches' }
                 ]
             }
         ]
@@ -180,13 +329,20 @@ const TUTORIALS = {
         color: 'purple',
         sections: [
             {
-                title: 'Remote Operations',
+                title: 'Managing Remotes',
                 commands: [
-                    { cmd: 'git remote add origin <url>', desc: 'Add remote' },
-                    { cmd: 'git remote -v', desc: 'List remotes' },
-                    { cmd: 'git push origin <branch>', desc: 'Push to remote' },
-                    { cmd: 'git pull origin <branch>', desc: 'Pull from remote' },
-                    { cmd: 'git fetch', desc: 'Download remote changes' }
+                    { cmd: 'git remote add origin <url>', desc: 'Add a remote called origin' },
+                    { cmd: 'git remote -v', desc: 'List all remotes with URLs' },
+                    { cmd: 'git remote remove <name>', desc: 'Remove a remote' }
+                ]
+            },
+            {
+                title: 'Syncing with Remotes',
+                commands: [
+                    { cmd: 'git push origin <branch>', desc: 'Push commits to remote' },
+                    { cmd: 'git push -u origin <branch>', desc: 'Push and set upstream' },
+                    { cmd: 'git pull origin <branch>', desc: 'Pull changes from remote' },
+                    { cmd: 'git fetch origin', desc: 'Download remote changes (no merge)' }
                 ]
             }
         ]
@@ -197,12 +353,67 @@ const TUTORIALS = {
         color: 'red',
         sections: [
             {
-                title: 'Undo Operations',
+                title: 'Unstaging Files',
                 commands: [
-                    { cmd: 'git reset HEAD <file>', desc: 'Unstage a file' },
-                    { cmd: 'git reset --hard', desc: 'Discard all changes' },
-                    { cmd: 'git checkout -- <file>', desc: 'Discard file changes' },
-                    { cmd: 'git rm <file>', desc: 'Remove file from Git' }
+                    { cmd: 'git reset HEAD <file>', desc: 'Unstage a file (keep changes)' },
+                    { cmd: 'git restore --staged <file>', desc: 'Modern way to unstage' }
+                ]
+            },
+            {
+                title: 'Discarding Changes',
+                commands: [
+                    { cmd: 'git checkout -- <file>', desc: 'Discard changes to a file' },
+                    { cmd: 'git restore <file>', desc: 'Modern way to discard changes' },
+                    { cmd: 'git reset --hard', desc: 'Discard ALL uncommitted changes' },
+                    { cmd: 'git rm <file>', desc: 'Remove file from Git and disk' }
+                ]
+            }
+        ]
+    },
+    workflows: {
+        title: 'Common Workflows',
+        icon: 'fa-sitemap',
+        color: 'orange',
+        sections: [
+            {
+                title: 'Feature Branch Workflow',
+                commands: [
+                    { cmd: 'git checkout -b feature/my-feature', desc: '1. Create feature branch' },
+                    { cmd: 'git add . && git commit -m "Add feature"', desc: '2. Make commits' },
+                    { cmd: 'git checkout main', desc: '3. Switch to main' },
+                    { cmd: 'git merge feature/my-feature', desc: '4. Merge feature' }
+                ]
+            },
+            {
+                title: 'Saving Work in Progress',
+                commands: [
+                    { cmd: 'git stash', desc: 'Temporarily save changes' },
+                    { cmd: 'git stash list', desc: 'List saved stashes' },
+                    { cmd: 'git stash pop', desc: 'Restore stashed changes' },
+                    { cmd: 'git stash drop', desc: 'Delete a stash' }
+                ]
+            }
+        ]
+    },
+    bestpractices: {
+        title: 'Best Practices',
+        icon: 'fa-lightbulb',
+        color: 'cyan',
+        sections: [
+            {
+                title: 'Commit Messages',
+                commands: [
+                    { cmd: 'git commit -m "Add user login feature"', desc: 'Use present tense' },
+                    { cmd: 'git commit -m "Fix bug in payment processing"', desc: 'Be specific' },
+                    { cmd: 'git commit -m "Update README with install instructions"', desc: 'Explain what changed' }
+                ]
+            },
+            {
+                title: 'Branch Naming',
+                commands: [
+                    { cmd: 'git checkout -b feature/user-auth', desc: 'feature/ for new features' },
+                    { cmd: 'git checkout -b bugfix/login-error', desc: 'bugfix/ for bug fixes' },
+                    { cmd: 'git checkout -b hotfix/security-patch', desc: 'hotfix/ for urgent fixes' }
                 ]
             }
         ]
@@ -323,6 +534,7 @@ class GitTerminal {
             stagingArea: [],
             workingDirectory: {},
             remoteRepos: {},
+            stash: [],
             config: {
                 'user.name': DEFAULT_USER_NAME,
                 'user.email': DEFAULT_USER_EMAIL,
@@ -556,6 +768,9 @@ class GitTerminal {
             'rm': () => this.gitRm(gitArgs),
             'reset': () => this.gitReset(gitArgs),
             'merge': () => this.gitMerge(gitArgs),
+            'stash': () => this.gitStash(gitArgs),
+            'restore': () => this.gitRestore(gitArgs),
+            'fetch': () => this.gitFetch(gitArgs),
             'help': () => this.gitHelp(gitArgs)
         };
 
@@ -1067,6 +1282,195 @@ class GitTerminal {
         this.addSuccessFeedback();
     }
 
+    gitStash(args) {
+        if (!this.gitState.currentRepo) {
+            this.writeError('fatal: not a git repository');
+            return;
+        }
+
+        if (args.length === 0 || args[0] === 'push') {
+            // Stash current changes
+            const modifiedFiles = Object.entries(this.gitState.workingDirectory)
+                .filter(([_, file]) => file.modified || file.staged)
+                .map(([name, file]) => ({
+                    name,
+                    content: file.content,
+                    modified: file.modified,
+                    staged: file.staged
+                }));
+
+            if (modifiedFiles.length === 0 && this.gitState.stagingArea.length === 0) {
+                this.writeLine('No local changes to save', 'text-gray-400');
+                return;
+            }
+
+            const stashEntry = {
+                id: this.gitState.stash.length,
+                branch: this.gitState.currentBranch,
+                files: modifiedFiles,
+                stagingArea: [...this.gitState.stagingArea],
+                message: args[1] === '-m' && args[2] ? args.slice(2).join(' ').replace(/["']/g, '') : `WIP on ${this.gitState.currentBranch}`,
+                timestamp: new Date()
+            };
+
+            this.gitState.stash.push(stashEntry);
+
+            // Reset working directory changes
+            Object.values(this.gitState.workingDirectory).forEach(file => {
+                file.modified = false;
+                file.staged = false;
+            });
+            this.gitState.stagingArea = [];
+
+            this.writeSuccess(`Saved working directory and index state "${stashEntry.message}"`);
+            this.addSuccessFeedback();
+        } else if (args[0] === 'list') {
+            if (this.gitState.stash.length === 0) {
+                this.writeLine('No stashed changes', 'text-gray-400');
+            } else {
+                this.gitState.stash.forEach((entry, idx) => {
+                    this.writeLine(`stash@{${idx}}: ${entry.message}`, 'text-gray-300');
+                });
+            }
+        } else if (args[0] === 'pop' || args[0] === 'apply') {
+            if (this.gitState.stash.length === 0) {
+                this.writeError('error: No stash entries found.');
+                return;
+            }
+
+            const stashIdx = args[1] ? parseInt(args[1].replace('stash@{', '').replace('}', '')) : this.gitState.stash.length - 1;
+            const stashEntry = this.gitState.stash[stashIdx];
+
+            if (!stashEntry) {
+                this.writeError(`error: stash@{${stashIdx}} is not a valid reference`);
+                return;
+            }
+
+            // Restore files from stash
+            stashEntry.files.forEach(savedFile => {
+                if (this.gitState.workingDirectory[savedFile.name]) {
+                    this.gitState.workingDirectory[savedFile.name].content = savedFile.content;
+                    this.gitState.workingDirectory[savedFile.name].modified = savedFile.modified;
+                    this.gitState.workingDirectory[savedFile.name].staged = savedFile.staged;
+                }
+            });
+            this.gitState.stagingArea = [...stashEntry.stagingArea];
+
+            if (args[0] === 'pop') {
+                this.gitState.stash.splice(stashIdx, 1);
+            }
+
+            this.writeSuccess(`Applied stash@{${stashIdx}} (${stashEntry.message})`);
+            if (args[0] === 'pop') {
+                this.writeLine('Dropped stash entry', 'text-gray-400');
+            }
+            this.addSuccessFeedback();
+        } else if (args[0] === 'drop') {
+            if (this.gitState.stash.length === 0) {
+                this.writeError('error: No stash entries found.');
+                return;
+            }
+
+            const stashIdx = args[1] ? parseInt(args[1].replace('stash@{', '').replace('}', '')) : this.gitState.stash.length - 1;
+            
+            if (stashIdx >= 0 && stashIdx < this.gitState.stash.length) {
+                this.gitState.stash.splice(stashIdx, 1);
+                this.writeSuccess(`Dropped stash@{${stashIdx}}`);
+            } else {
+                this.writeError(`error: stash@{${stashIdx}} is not a valid reference`);
+            }
+        } else if (args[0] === 'clear') {
+            this.gitState.stash = [];
+            this.writeSuccess('Cleared all stash entries');
+        } else {
+            this.writeError('usage: git stash [push [-m <message>] | pop | apply | drop | list | clear]');
+        }
+    }
+
+    gitRestore(args) {
+        if (!this.gitState.currentRepo) {
+            this.writeError('fatal: not a git repository');
+            return;
+        }
+
+        if (args.length === 0) {
+            this.writeError('fatal: you must specify path(s) to restore');
+            return;
+        }
+
+        if (args[0] === '--staged') {
+            // Unstage files
+            const filename = args[1];
+            if (!filename) {
+                this.writeError('fatal: you must specify path(s) to restore');
+                return;
+            }
+
+            if (filename === '.') {
+                // Unstage all
+                this.gitState.stagingArea.forEach(f => {
+                    if (this.gitState.workingDirectory[f]) {
+                        this.gitState.workingDirectory[f].staged = false;
+                    }
+                });
+                this.gitState.stagingArea = [];
+                this.writeSuccess('Unstaged all files');
+            } else if (this.gitState.stagingArea.includes(filename)) {
+                this.gitState.stagingArea = this.gitState.stagingArea.filter(f => f !== filename);
+                if (this.gitState.workingDirectory[filename]) {
+                    this.gitState.workingDirectory[filename].staged = false;
+                }
+                this.writeSuccess(`Unstaged '${filename}'`);
+            } else {
+                this.writeError(`error: pathspec '${filename}' did not match any file(s) known to git`);
+            }
+        } else {
+            // Discard changes
+            const filename = args[0];
+            
+            if (filename === '.') {
+                // Discard all changes
+                Object.values(this.gitState.workingDirectory).forEach(file => {
+                    file.content = file.originalContent;
+                    file.modified = false;
+                });
+                this.writeSuccess('Restored all files');
+            } else if (this.gitState.workingDirectory[filename]) {
+                const file = this.gitState.workingDirectory[filename];
+                file.content = file.originalContent;
+                file.modified = false;
+                this.writeSuccess(`Restored '${filename}'`);
+            } else {
+                this.writeError(`error: pathspec '${filename}' did not match any file(s) known to git`);
+            }
+        }
+        this.addSuccessFeedback();
+    }
+
+    gitFetch(args) {
+        if (!this.gitState.currentRepo) {
+            this.writeError('fatal: not a git repository');
+            return;
+        }
+
+        if (Object.keys(this.gitState.remoteRepos).length === 0) {
+            this.writeError('fatal: No remote repository configured.');
+            return;
+        }
+
+        const remote = args[0] || 'origin';
+
+        if (!this.gitState.remoteRepos[remote]) {
+            this.writeError(`fatal: '${remote}' does not appear to be a git repository`);
+            return;
+        }
+
+        this.writeLine(`From ${this.gitState.remoteRepos[remote]}`, 'text-gray-400');
+        this.writeLine(' * branch            main       -> FETCH_HEAD', 'text-gray-400');
+        this.writeSuccess('Already up to date.');
+        this.addSuccessFeedback();
+    }
+
     gitHelp(args) {
         this.writeLine('These are common Git commands used in various situations:', 'text-blue-400');
         this.writeLine('');
@@ -1078,6 +1482,7 @@ class GitTerminal {
         this.writeLine('  add       Add file contents to the index');
         this.writeLine('  restore   Restore working tree files');
         this.writeLine('  rm        Remove files from the working tree and index');
+        this.writeLine('  stash     Stash the changes in a dirty working directory');
         this.writeLine('');
         this.writeLine('<span class="font-semibold">Examine the history and state</span>', 'text-yellow-400');
         this.writeLine('  log       Show commit logs');
@@ -1088,8 +1493,8 @@ class GitTerminal {
         this.writeLine('  branch    List, create, or delete branches');
         this.writeLine('  commit    Record changes to the repository');
         this.writeLine('  merge     Join two or more development histories together');
+        this.writeLine('  reset     Reset current HEAD to the specified state');
         this.writeLine('  switch    Switch branches');
-        this.writeLine('  tag       Create, list, delete or verify a tag object');
         this.writeLine('');
         this.writeLine('<span class="font-semibold">Collaborate</span>', 'text-yellow-400');
         this.writeLine('  fetch     Download objects and refs from another repository');
@@ -1469,7 +1874,7 @@ class GitTerminal {
         // Check if current exercise is complete
         if (this.currentExercise) {
             const exercise = EXERCISES.find(e => e.id === this.currentExercise);
-            if (exercise && exercise.check(this.gitState)) {
+            if (exercise && exercise.check(this.gitState, this.history)) {
                 this.completedExercises.add(this.currentExercise);
                 this.exerciseProgress++;
                 this.writeSuccess(`✅ Exercise "${exercise.title}" completed!`);
@@ -1503,7 +1908,7 @@ class GitTerminal {
         if (!this.currentExercise) return;
         
         const exercise = EXERCISES.find(e => e.id === this.currentExercise);
-        if (exercise && exercise.check(this.gitState)) {
+        if (exercise && exercise.check(this.gitState, this.history)) {
             this.completedExercises.add(this.currentExercise);
             this.exerciseProgress++;
             this.writeLine('');
