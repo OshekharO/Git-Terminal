@@ -741,9 +741,21 @@ class GitTerminal {
             }
         } else if (words.length >= 2 && (words[0] === 'cat' || words[0] === 'touch' || words[0] === 'nano' ||
                    words[0] === 'vim' || words[0] === 'vi' ||
-                   (words[0] === 'git' && (words[1] === 'add' || words[1] === 'rm' || words[1] === 'show')))) {
+                   (words[0] === 'git' && (words[1] === 'add' || words[1] === 'rm')))) {
             const files = Object.keys(this.gitState.workingDirectory);
             const match = files.find(file => file.startsWith(lastWord));
+            if (match) {
+                words[words.length - 1] = match;
+                this.cmdLine.value = words.join(' ');
+                this.showAutocompleteFeedback();
+            }
+        } else if (words.length >= 2 && words[0] === 'git' && words[1] === 'show') {
+            // Complete against tag names and commit hash prefixes
+            const refs = [
+                ...Object.keys(this.gitState.tags),
+                ...this.gitState.commits.map(c => c.hash.substring(0, 7))
+            ];
+            const match = refs.find(r => r.startsWith(lastWord));
             if (match) {
                 words[words.length - 1] = match;
                 this.cmdLine.value = words.join(' ');
@@ -1040,7 +1052,7 @@ class GitTerminal {
         const commits = this.gitState.commits.slice().reverse().slice(0, limit);
 
         commits.forEach((commit, idx) => {
-            const graphPrefix = graph ? `<span class="text-purple-400">${idx === 0 ? '* ' : '* '}</span>` : '';
+            const graphPrefix = graph ? `<span class="text-purple-400">* </span>` : '';
             if (oneline) {
                 this.writeLine(`${graphPrefix}<span class="commit-hash">${commit.hash.substring(0, 7)}</span> ${this.escapeHtml(commit.message)}`);
             } else {
@@ -1150,22 +1162,24 @@ class GitTerminal {
             const newContent = file.content || '';
             const oldLines = oldContent.split('\n');
             const newLines = newContent.split('\n');
+            const oldSet = new Set(oldLines);
+            const newSet = new Set(newLines);
 
             this.writeLine(`diff --git a/${filename} b/${filename}`, 'text-gray-400');
             this.writeLine(`--- a/${filename}`, 'text-red-400');
             this.writeLine(`+++ b/${filename}`, 'text-green-400');
             this.writeLine(`@@ -1,${oldLines.length} +1,${newLines.length} @@`, 'text-purple-400');
 
-            // Simple line-by-line diff: show removed then added lines
+            // Show removed lines, then context lines, then added lines
             oldLines.forEach(line => {
-                if (!newLines.includes(line)) {
+                if (!newSet.has(line)) {
                     this.writeLine(`<span class="text-red-400">-${this.escapeHtml(line)}</span>`);
                 } else {
                     this.writeLine(` ${this.escapeHtml(line)}`);
                 }
             });
             newLines.forEach(line => {
-                if (!oldLines.includes(line)) {
+                if (!oldSet.has(line)) {
                     this.writeLine(`<span class="text-green-400">+${this.escapeHtml(line)}</span>`);
                 }
             });
@@ -1712,9 +1726,25 @@ class GitTerminal {
         this.writeLine('');
         if (commit.files.length > 0) {
             commit.files.forEach(f => {
-                this.writeLine(`<span class="text-green-400">+++ b/${f}</span>`);
+                const file = this.gitState.workingDirectory[f];
+                this.writeLine(`diff --git a/${f} b/${f}`, 'text-gray-400');
+                if (!file) {
+                    // File was deleted
+                    this.writeLine(`deleted file mode 100644`, 'text-red-400');
+                    this.writeLine(`--- a/${f}`, 'text-red-400');
+                    this.writeLine(`+++ /dev/null`, 'text-red-400');
+                } else {
+                    const isNew = !commit.parent;
+                    this.writeLine(`--- ${isNew ? '/dev/null' : `a/${f}`}`, 'text-red-400');
+                    this.writeLine(`+++ b/${f}`, 'text-green-400');
+                    const lines = (file.content || '').split('\n');
+                    this.writeLine(`@@ -0,0 +1,${lines.length} @@`, 'text-purple-400');
+                    lines.forEach(line => {
+                        this.writeLine(`<span class="text-green-400">+${this.escapeHtml(line)}</span>`);
+                    });
+                }
+                this.writeLine('');
             });
-            this.writeLine('');
         }
     }
 
@@ -1766,7 +1796,8 @@ class GitTerminal {
             const ext = pattern.slice(1); // e.g. ".js"
             return allFiles.filter(f => f.endsWith(ext));
         } else {
-            return allFiles.filter(filename => filename === pattern || filename.includes(pattern.replace(/\*/g, '')));
+            // Exact match only; avoid overly broad substring matching
+            return allFiles.filter(filename => filename === pattern);
         }
     }
 
