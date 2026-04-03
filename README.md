@@ -84,7 +84,15 @@ The application uses:
 | `git config --global <key> <value>` | Set configuration |
 | `git config --list` | Show configuration |
 | `git reset --hard` | Discard all changes |
+| `git reset HEAD <file>` | Unstage a specific file |
 | `git rm <file>` | Remove file from Git |
+| `git tag` | List all tags |
+| `git tag <name>` | Create a lightweight tag |
+| `git tag -a <name> -m "msg"` | Create an annotated tag |
+| `git tag -d <name>` | Delete a tag |
+| `git show` | Show most recent commit |
+| `git show <ref>` | Show a commit or tag |
+| `git remote remove <name>` | Remove a remote |
 | `git help` | Show Git help |
 
 ### System Commands
@@ -94,7 +102,7 @@ The application uses:
 | `ls` | List files in directory |
 | `cat <file>` | Display file contents |
 | `touch <file>` | Create or update file |
-| `echo > <file> <content>` | Create file with content |
+| `echo "content" > <file>` | Create file with content |
 | `nano <file>` | Edit file with nano editor |
 | `vim <file>` | Edit file with vim editor |
 | `vi <file>` | Edit file with vi (alias for vim) |
@@ -121,7 +129,7 @@ The application uses:
 
 ## 🎓 Exercises
 
-The terminal includes 23 progressive exercises organized by difficulty:
+The terminal includes 24 progressive exercises organized by difficulty:
 
 ### Beginner (8 exercises)
 1. **Configure Git User** - Set up your name and email
@@ -133,7 +141,7 @@ The terminal includes 23 progressive exercises organized by difficulty:
 7. **View Commit History** - Use git log
 8. **List Directory Contents** - Use ls command
 
-### Intermediate (11 exercises)
+### Intermediate (13 exercises)
 9. **Create a New Branch** - Create feature branches
 10. **Switch Between Branches** - Navigate branches
 11. **Create and Switch in One Command** - Use checkout -b
@@ -144,12 +152,14 @@ The terminal includes 23 progressive exercises organized by difficulty:
 16. **Build a Commit History** - Make multiple commits
 17. **Delete a Branch** - Clean up old branches
 18. **Edit a File** - Use nano or vim
+19. **Stash Your Changes** - Temporarily save work in progress
+20. **Tag a Release** - Mark important points in history
 
 ### Advanced (4 exercises)
-19. **Merge a Branch** - Merge feature branches
-20. **Reset Changes** - Discard uncommitted changes
-21. **Clone a Repository** - Clone from URL
-22. **Complete Feature Workflow** - Full feature branch workflow
+21. **Merge a Branch** - Merge feature branches
+22. **Reset Changes** - Discard uncommitted changes
+23. **Clone a Repository** - Clone from URL
+24. **Complete Feature Workflow** - Full feature branch workflow
 
 Type `exercise` to start the guided learning path!
 
