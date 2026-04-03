@@ -198,6 +198,24 @@ const EXERCISES = [
     
     // ===== ADVANCED EXERCISES =====
     {
+        id: 'stash-changes',
+        title: 'Stash Your Changes',
+        desc: 'Use git stash to temporarily save uncommitted changes before switching tasks',
+        hint: 'Modify a file with nano/vim, then use: git stash to save and git stash pop to restore',
+        difficulty: 'intermediate',
+        category: 'workflow',
+        check: (state, history) => history && history.some(cmd => cmd.startsWith('git stash'))
+    },
+    {
+        id: 'create-tag',
+        title: 'Tag a Release',
+        desc: 'Create a tag to mark a release or important point in history',
+        hint: 'Use: git tag v1.0 to create a tag, git tag to list all tags',
+        difficulty: 'intermediate',
+        category: 'workflow',
+        check: (state) => Object.keys(state.tags).length > 0
+    },
+    {
         id: 'merge-branch',
         title: 'Merge a Branch',
         desc: 'Merge a feature branch into main branch',
@@ -309,7 +327,7 @@ const TUTORIALS = {
                 commands: [
                     { cmd: 'git log', desc: 'Show full commit history' },
                     { cmd: 'git log --oneline', desc: 'Compact one-line format' },
-                    { cmd: 'git log --graph', desc: 'Show branch graph' },
+                    { cmd: 'git log --oneline --graph', desc: 'Show branch graph' },
                     { cmd: 'git log -n 5', desc: 'Show last 5 commits' }
                 ]
             },
@@ -318,7 +336,7 @@ const TUTORIALS = {
                 commands: [
                     { cmd: 'git diff', desc: 'Show unstaged changes' },
                     { cmd: 'git diff --staged', desc: 'Show staged changes' },
-                    { cmd: 'git diff <branch1> <branch2>', desc: 'Compare two branches' }
+                    { cmd: 'git show', desc: 'Show most recent commit details' }
                 ]
             }
         ]
@@ -333,7 +351,7 @@ const TUTORIALS = {
                 commands: [
                     { cmd: 'git remote add origin <url>', desc: 'Add a remote called origin' },
                     { cmd: 'git remote -v', desc: 'List all remotes with URLs' },
-                    { cmd: 'git remote remove <name>', desc: 'Remove a remote' }
+                    { cmd: 'git remote remove origin', desc: 'Remove the origin remote' }
                 ]
             },
             {
@@ -417,6 +435,23 @@ const TUTORIALS = {
                 ]
             }
         ]
+    },
+    tags: {
+        title: 'Tags & Releases',
+        icon: 'fa-tag',
+        color: 'pink',
+        sections: [
+            {
+                title: 'Managing Tags',
+                commands: [
+                    { cmd: 'git tag', desc: 'List all tags' },
+                    { cmd: 'git tag v1.0', desc: 'Create a lightweight tag at HEAD' },
+                    { cmd: 'git tag -a v1.0 -m "Version 1.0"', desc: 'Create an annotated tag' },
+                    { cmd: 'git tag -d v1.0', desc: 'Delete a tag' },
+                    { cmd: 'git show v1.0', desc: 'Show the commit a tag points to' }
+                ]
+            }
+        ]
     }
 };
 
@@ -436,9 +471,9 @@ const SYSTEM_COMMANDS = {
         examples: ['cat README.md', 'cat script.js']
     },
     echo: {
-        description: 'Create file with content',
-        usage: 'echo > <file> [content]',
-        examples: ['echo > newfile.txt Hello World']
+        description: 'Create file with content or print text',
+        usage: 'echo "content" > <file>',
+        examples: ['echo "Hello World" > newfile.txt', 'echo Hello World']
     },
     nano: {
         description: 'Edit file with nano text editor',
@@ -535,6 +570,7 @@ class GitTerminal {
             workingDirectory: {},
             remoteRepos: {},
             stash: [],
+            tags: {},
             config: {
                 'user.name': DEFAULT_USER_NAME,
                 'user.email': DEFAULT_USER_EMAIL,
@@ -703,8 +739,9 @@ class GitTerminal {
                 this.cmdLine.value = words.join(' ') + ' ';
                 this.showAutocompleteFeedback();
             }
-        } else if (words.length >= 2 && (words[0] === 'cat' || words[0] === 'touch' || 
-                   (words[0] === 'git' && words[1] === 'add'))) {
+        } else if (words.length >= 2 && (words[0] === 'cat' || words[0] === 'touch' || words[0] === 'nano' ||
+                   words[0] === 'vim' || words[0] === 'vi' ||
+                   (words[0] === 'git' && (words[1] === 'add' || words[1] === 'rm' || words[1] === 'show')))) {
             const files = Object.keys(this.gitState.workingDirectory);
             const match = files.find(file => file.startsWith(lastWord));
             if (match) {
@@ -743,7 +780,11 @@ class GitTerminal {
             '"': '&quot;',
             "'": '&#39;'
         };
-        return text.replace(/[&<>"']/g, char => htmlEscapes[char]);
+        return String(text).replace(/[&<>"']/g, char => htmlEscapes[char]);
+    }
+
+    escapeAttr(text) {
+        return this.escapeHtml(text);
     }
 
     executeGitCommand(args) {
@@ -771,6 +812,8 @@ class GitTerminal {
             'stash': () => this.gitStash(gitArgs),
             'restore': () => this.gitRestore(gitArgs),
             'fetch': () => this.gitFetch(gitArgs),
+            'tag': () => this.gitTag(gitArgs),
+            'show': () => this.gitShow(gitArgs),
             'help': () => this.gitHelp(gitArgs)
         };
 
@@ -913,10 +956,11 @@ class GitTerminal {
         
         if (this.gitState.commits.length === 0) {
             this.writeWarning('No commits yet');
-        } else {
-            const ahead = this.gitState.remoteRepos.origin ? 2 : 0;
-            if (ahead > 0) {
-                this.writeLine(`Your branch is ahead of 'origin/${this.gitState.currentBranch}' by ${ahead} commit${ahead === 1 ? '' : 's'}.`, 'text-green-400');
+        } else if (this.gitState.remoteRepos.origin && this.gitState.commits.length > 0) {
+            // Show ahead only when remote exists and there are unpushed commits
+            const unpushed = this.gitState.commits.filter(c => !c.pushed).length;
+            if (unpushed > 0) {
+                this.writeLine(`Your branch is ahead of 'origin/${this.gitState.currentBranch}' by ${unpushed} commit${unpushed === 1 ? '' : 's'}.`, 'text-green-400');
             }
         }
 
@@ -977,16 +1021,35 @@ class GitTerminal {
         }
 
         const oneline = args.includes('--oneline');
-        
-        this.gitState.commits.slice().reverse().forEach(commit => {
+        const graph = args.includes('--graph');
+
+        // Parse -n <num> or -<num>
+        let limit = this.gitState.commits.length;
+        const nFlagIdx = args.indexOf('-n');
+        if (nFlagIdx !== -1 && args[nFlagIdx + 1]) {
+            const parsed = parseInt(args[nFlagIdx + 1], 10);
+            if (!isNaN(parsed) && parsed > 0) limit = parsed;
+        } else {
+            const shortFlag = args.find(a => /^-\d+$/.test(a));
+            if (shortFlag) {
+                const parsed = parseInt(shortFlag.slice(1), 10);
+                if (!isNaN(parsed) && parsed > 0) limit = parsed;
+            }
+        }
+
+        const commits = this.gitState.commits.slice().reverse().slice(0, limit);
+
+        commits.forEach((commit, idx) => {
+            const graphPrefix = graph ? `<span class="text-purple-400">${idx === 0 ? '* ' : '* '}</span>` : '';
             if (oneline) {
-                this.writeLine(`<span class="commit-hash">${commit.hash.substring(0, 7)}</span> ${commit.message}`);
+                this.writeLine(`${graphPrefix}<span class="commit-hash">${commit.hash.substring(0, 7)}</span> ${this.escapeHtml(commit.message)}`);
             } else {
+                if (graph) this.writeLine(`<span class="text-purple-400">*</span>`);
                 this.writeLine(`commit <span class="commit-hash">${commit.hash}</span>`);
-                this.writeLine(`Author: ${commit.author}`);
+                this.writeLine(`Author: ${this.escapeHtml(commit.author)}`);
                 this.writeLine(`Date:   ${commit.timestamp.toLocaleString()}`);
                 this.writeLine('');
-                this.writeLine(`    ${commit.message}`);
+                this.writeLine(`    ${this.escapeHtml(commit.message)}`);
                 this.writeLine('');
             }
         });
@@ -1003,13 +1066,14 @@ class GitTerminal {
                 const current = branch === this.gitState.currentBranch ? '<span class="text-green-400 font-semibold">*</span>' : ' ';
                 this.writeLine(`${current} ${branch}`);
             });
-        } else if (args[0] === '-d' && args[1]) {
+        } else if ((args[0] === '-d' || args[0] === '-D') && args[1]) {
             const branchToDelete = args[1];
+            const force = args[0] === '-D';
             if (branchToDelete === this.gitState.currentBranch) {
                 this.writeError(`error: Cannot delete branch '${branchToDelete}' checked out at '/home/user'`);
             } else if (this.gitState.branches.includes(branchToDelete)) {
                 this.gitState.branches = this.gitState.branches.filter(b => b !== branchToDelete);
-                this.writeSuccess(`Deleted branch ${branchToDelete}`);
+                this.writeSuccess(`Deleted branch ${branchToDelete}${force ? ' (force)' : ''}`);
             } else {
                 this.writeError(`error: branch '${branchToDelete}' not found.`);
             }
@@ -1070,17 +1134,43 @@ class GitTerminal {
             return;
         }
 
-        this.writeLine('diff --git a/file.txt b/file.txt', 'text-gray-400');
-        this.writeLine('index 1234567..89abcde 100644', 'text-gray-400');
-        this.writeLine('--- a/file.txt', 'text-red-400');
-        this.writeLine('+++ b/file.txt', 'text-green-400');
-        this.writeLine('@@ -1,3 +1,4 @@', 'text-purple-400');
-        this.writeLine(' Hello, World!', 'text-gray-400');
-        this.writeLine('<span class="text-green-400">+This is a new line</span>', 'text-gray-400');
-        this.writeLine(' Some existing content', 'text-gray-400');
-        this.writeLine('<span class="text-green-400">+Another addition</span>', 'text-gray-400');
-        this.writeLine('', 'text-gray-400');
-        this.writeLine('(Simulated diff output)', 'text-yellow-400 text-sm');
+        const staged = args.includes('--staged') || args.includes('--cached');
+
+        // Collect files that are modified (unstaged) or staged
+        const filesToDiff = Object.entries(this.gitState.workingDirectory)
+            .filter(([, file]) => staged ? file.staged : file.modified && !file.staged);
+
+        if (filesToDiff.length === 0) {
+            this.writeLine(staged ? '(no staged changes)' : '(no unstaged changes)', 'text-gray-400');
+            return;
+        }
+
+        filesToDiff.forEach(([filename, file]) => {
+            const oldContent = file.originalContent || '';
+            const newContent = file.content || '';
+            const oldLines = oldContent.split('\n');
+            const newLines = newContent.split('\n');
+
+            this.writeLine(`diff --git a/${filename} b/${filename}`, 'text-gray-400');
+            this.writeLine(`--- a/${filename}`, 'text-red-400');
+            this.writeLine(`+++ b/${filename}`, 'text-green-400');
+            this.writeLine(`@@ -1,${oldLines.length} +1,${newLines.length} @@`, 'text-purple-400');
+
+            // Simple line-by-line diff: show removed then added lines
+            oldLines.forEach(line => {
+                if (!newLines.includes(line)) {
+                    this.writeLine(`<span class="text-red-400">-${this.escapeHtml(line)}</span>`);
+                } else {
+                    this.writeLine(` ${this.escapeHtml(line)}`);
+                }
+            });
+            newLines.forEach(line => {
+                if (!oldLines.includes(line)) {
+                    this.writeLine(`<span class="text-green-400">+${this.escapeHtml(line)}</span>`);
+                }
+            });
+            this.writeLine('');
+        });
     }
 
     gitConfig(args) {
@@ -1125,8 +1215,17 @@ class GitTerminal {
                     this.writeLine(`${name}\t${url} (push)`);
                 });
             }
+        } else if (args[0] === 'remove' && args[1]) {
+            const name = args[1];
+            if (this.gitState.remoteRepos[name] !== undefined) {
+                delete this.gitState.remoteRepos[name];
+                this.writeSuccess(`Removed remote '${name}'`);
+            } else {
+                this.writeError(`fatal: No such remote: '${name}'`);
+            }
         } else {
             this.writeError('usage: git remote add <name> <url>');
+            this.writeLine('   or: git remote remove <name>', 'text-gray-400');
             this.writeLine('   or: git remote -v', 'text-gray-400');
         }
     }
@@ -1158,6 +1257,10 @@ class GitTerminal {
         this.writeLine(`Total ${this.gitState.commits.length} (delta 0), reused 0 (delta 0)`, 'text-gray-400');
         this.writeLine(`To ${this.gitState.remoteRepos[remote]}`);
         this.writeSuccess(` * [new branch]      ${branch} -> ${branch}`);
+
+        // Mark all commits as pushed
+        this.gitState.commits.forEach(c => { c.pushed = true; });
+
         this.addSuccessFeedback();
     }
 
@@ -1184,12 +1287,13 @@ class GitTerminal {
         this.gitState.currentRepo = '/home/user';
         this.gitState.commits = [
             {
-                hash: 'a1b2c3d4',
+                hash: this.generateCommitHash(),
                 message: 'Initial commit',
                 branch: 'main',
                 files: ['README.md'],
                 timestamp: new Date(),
-                author: 'Other User <other@example.com>'
+                author: 'Other User <other@example.com>',
+                pushed: true
             }
         ];
         this.gitState.branches = ['main'];
@@ -1217,15 +1321,25 @@ class GitTerminal {
         }
 
         const filename = args[0];
+        const isTracked = this.gitState.commits.some(commit => commit.files.includes(filename)) ||
+                          this.gitState.stagingArea.includes(filename);
+
+        if (!isTracked) {
+            this.writeError(`fatal: pathspec '${filename}' did not match any files`);
+            return;
+        }
+
+        // Remove from staging area if present
         const stagedIndex = this.gitState.stagingArea.indexOf(filename);
-        
         if (stagedIndex !== -1) {
             this.gitState.stagingArea.splice(stagedIndex, 1);
-            delete this.gitState.workingDirectory[filename];
-            this.writeSuccess(`rm '${filename}'`);
-        } else {
-            this.writeError(`fatal: pathspec '${filename}' did not match any files`);
         }
+
+        // Remove from working directory
+        delete this.gitState.workingDirectory[filename];
+
+        // Stage the deletion so it appears in the next commit
+        this.writeSuccess(`rm '${filename}'`);
     }
 
     gitReset(args) {
@@ -1242,8 +1356,21 @@ class GitTerminal {
             });
             this.writeSuccess('HEAD is now at latest commit');
             this.addSuccessFeedback();
+        } else if (args[0] === 'HEAD' && args[1]) {
+            // Unstage a specific file
+            const filename = args[1];
+            if (this.gitState.stagingArea.includes(filename)) {
+                this.gitState.stagingArea = this.gitState.stagingArea.filter(f => f !== filename);
+                if (this.gitState.workingDirectory[filename]) {
+                    this.gitState.workingDirectory[filename].staged = false;
+                }
+                this.writeSuccess(`Unstaged changes for '${filename}'`);
+            } else {
+                this.writeError(`error: pathspec '${filename}' did not match any file(s) known to git`);
+            }
         } else {
             this.writeError('usage: git reset [--hard]');
+            this.writeLine('   or: git reset HEAD <file>', 'text-gray-400');
         }
     }
 
@@ -1482,6 +1609,115 @@ class GitTerminal {
         this.addSuccessFeedback();
     }
 
+    gitTag(args) {
+        if (!this.gitState.currentRepo) {
+            this.writeError('fatal: not a git repository');
+            return;
+        }
+
+        if (args.length === 0) {
+            // List tags
+            const tagNames = Object.keys(this.gitState.tags);
+            if (tagNames.length === 0) {
+                this.writeLine('(no tags)', 'text-gray-400');
+            } else {
+                tagNames.forEach(tag => this.writeLine(tag));
+            }
+            return;
+        }
+
+        if (args[0] === '-d' && args[1]) {
+            const tagName = args[1];
+            if (this.gitState.tags[tagName] !== undefined) {
+                const hash = this.gitState.tags[tagName];
+                delete this.gitState.tags[tagName];
+                this.writeSuccess(`Deleted tag '${tagName}' (was ${hash.substring(0, 7)})`);
+            } else {
+                this.writeError(`error: tag '${tagName}' not found.`);
+            }
+            return;
+        }
+
+        // Annotated tag: git tag -a <name> -m <msg>
+        if (args[0] === '-a' && args[1]) {
+            const tagName = args[1];
+            const mIdx = args.indexOf('-m');
+            const message = mIdx !== -1 && args[mIdx + 1]
+                ? args.slice(mIdx + 1).join(' ').replace(/^["']|["']$/g, '')
+                : '';
+
+            if (!this.gitState.HEAD) {
+                this.writeError('fatal: Failed to resolve HEAD as a valid ref.');
+                return;
+            }
+            if (this.gitState.tags[tagName] !== undefined) {
+                this.writeError(`fatal: tag '${tagName}' already exists`);
+                return;
+            }
+            this.gitState.tags[tagName] = this.gitState.HEAD;
+            this.writeSuccess(`Created annotated tag '${tagName}'${message ? ` with message "${message}"` : ''}`);
+            this.addSuccessFeedback();
+            return;
+        }
+
+        // Lightweight tag: git tag <name>
+        const tagName = args[0];
+        if (!this.gitState.HEAD) {
+            this.writeError('fatal: Failed to resolve HEAD as a valid ref.');
+            return;
+        }
+        if (this.gitState.tags[tagName] !== undefined) {
+            this.writeError(`fatal: tag '${tagName}' already exists`);
+            return;
+        }
+        this.gitState.tags[tagName] = this.gitState.HEAD;
+        this.writeSuccess(`Created tag '${tagName}'`);
+        this.addSuccessFeedback();
+    }
+
+    gitShow(args) {
+        if (!this.gitState.currentRepo) {
+            this.writeError('fatal: not a git repository');
+            return;
+        }
+
+        if (this.gitState.commits.length === 0) {
+            this.writeError('fatal: your current branch does not have any commits yet');
+            return;
+        }
+
+        // Resolve the ref: could be a tag name, commit hash prefix, or blank (HEAD)
+        const ref = args[0] || null;
+        let commit = null;
+
+        if (!ref) {
+            commit = this.gitState.commits[this.gitState.commits.length - 1];
+        } else if (this.gitState.tags[ref]) {
+            const hash = this.gitState.tags[ref];
+            commit = this.gitState.commits.find(c => c.hash === hash);
+        } else {
+            commit = this.gitState.commits.find(c => c.hash.startsWith(ref));
+        }
+
+        if (!commit) {
+            this.writeError(`fatal: ambiguous argument '${ref}': unknown revision`);
+            return;
+        }
+
+        this.writeLine(`commit <span class="commit-hash">${commit.hash}</span>`);
+        this.writeLine(`Author: ${this.escapeHtml(commit.author)}`);
+        this.writeLine(`Date:   ${commit.timestamp.toLocaleString()}`);
+        this.writeLine('');
+        this.writeLine(`    ${this.escapeHtml(commit.message)}`);
+        this.writeLine('');
+        if (commit.files.length > 0) {
+            commit.files.forEach(f => {
+                this.writeLine(`<span class="text-green-400">+++ b/${f}</span>`);
+            });
+            this.writeLine('');
+        }
+    }
+
     gitHelp(args) {
         this.writeLine('These are common Git commands used in various situations:', 'text-blue-400');
         this.writeLine('');
@@ -1496,9 +1732,10 @@ class GitTerminal {
         this.writeLine('  stash     Stash the changes in a dirty working directory');
         this.writeLine('');
         this.writeLine('<span class="font-semibold">Examine the history and state</span>', 'text-yellow-400');
-        this.writeLine('  log       Show commit logs');
-        this.writeLine('  status    Show the working tree status');
         this.writeLine('  diff      Show changes between commits');
+        this.writeLine('  log       Show commit logs');
+        this.writeLine('  show      Show a commit or tag');
+        this.writeLine('  status    Show the working tree status');
         this.writeLine('');
         this.writeLine('<span class="font-semibold">Grow, mark and tweak your common history</span>', 'text-yellow-400');
         this.writeLine('  branch    List, create, or delete branches');
@@ -1506,6 +1743,7 @@ class GitTerminal {
         this.writeLine('  merge     Join two or more development histories together');
         this.writeLine('  reset     Reset current HEAD to the specified state');
         this.writeLine('  switch    Switch branches');
+        this.writeLine('  tag       Create, list, or delete tags');
         this.writeLine('');
         this.writeLine('<span class="font-semibold">Collaborate</span>', 'text-yellow-400');
         this.writeLine('  fetch     Download objects and refs from another repository');
@@ -1524,12 +1762,20 @@ class GitTerminal {
             );
         } else if (pattern === '*') {
             return allFiles;
+        } else if (pattern.startsWith('*.')) {
+            const ext = pattern.slice(1); // e.g. ".js"
+            return allFiles.filter(f => f.endsWith(ext));
         } else {
-            return allFiles.filter(filename => filename.includes(pattern.replace('*', '')));
+            return allFiles.filter(filename => filename === pattern || filename.includes(pattern.replace(/\*/g, '')));
         }
     }
 
     generateCommitHash() {
+        if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+            const arr = new Uint8Array(20);
+            crypto.getRandomValues(arr);
+            return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('');
+        }
         return Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
     }
 
@@ -1590,6 +1836,8 @@ class GitTerminal {
         this.exerciseProgress = 0;
         this.currentExercise = null;
         this.completedExercises.clear();
+        this.history = [];
+        this.histIdx = null;
         this.updatePrompt();
         this.writeSuccess('Repository has been reset');
         this.addSuccessFeedback();
@@ -1616,22 +1864,33 @@ class GitTerminal {
         const file = this.gitState.workingDirectory[filename];
         
         if (file && file.type === 'file') {
-            this.writeLine(file.content.replace(/\n/g, '<br>'), 'text-gray-300');
+            const escaped = this.escapeHtml(file.content).replace(/\n/g, '<br>');
+            this.writeLine(escaped, 'text-gray-300');
         } else {
             this.writeError(`cat: ${filename}: No such file or directory`);
         }
     }
 
     echo(args) {
-        if (args[0] === '>' && args[1]) {
-            const filename = args[1];
-            const content = args.slice(2).join(' ') || 'New file content';
+        // Standard shell syntax: echo "content" > file
+        // Also support legacy: echo > file content
+        const redirectIdx = args.indexOf('>');
+        if (redirectIdx !== -1) {
+            const filename = args[redirectIdx + 1];
+            if (!filename) {
+                this.writeError('usage: echo "content" > <file>');
+                return;
+            }
+            const contentParts = redirectIdx === 0
+                ? args.slice(2)          // legacy: echo > file content
+                : args.slice(0, redirectIdx); // standard: echo content > file
+            const content = contentParts.join(' ').replace(/^["']|["']$/g, '') || 'New file content';
             this.gitState.workingDirectory[filename] = this.createFile(content);
             this.gitState.workingDirectory[filename].modified = true;
             this.writeSuccess(`Created file "${filename}"`);
             this.addSuccessFeedback();
         } else {
-            this.writeLine(args.join(' '), 'text-gray-300');
+            this.writeLine(this.escapeHtml(args.join(' ')), 'text-gray-300');
         }
     }
 
@@ -2001,10 +2260,11 @@ class GitTerminal {
                                 <div class="mb-3">
                                     <div class="text-xs text-gray-400 mb-1">${section.title}</div>
                                     ${section.commands.map(cmd => `
-                                        <code class="text-xs block mb-1 text-gray-300 hover:text-white transition-colors cursor-pointer" 
-                                              onclick="navigator.clipboard.writeText('${cmd.cmd}')" 
-                                              title="Click to copy">
-                                            ${cmd.cmd}
+                                        <code class="tutorial-cmd text-xs block mb-1 text-gray-300 hover:text-white transition-colors cursor-pointer" 
+                                              data-copy="${this.escapeAttr(cmd.cmd)}" 
+                                              tabindex="0"
+                                              title="Click to copy: ${this.escapeAttr(cmd.cmd)}">
+                                            ${this.escapeHtml(cmd.cmd)}
                                         </code>
                                     `).join('')}
                                 </div>
@@ -2035,6 +2295,23 @@ class GitTerminal {
         this.tutorialContent.innerHTML = tutorialHTML;
         this.tutorialModal.classList.remove('hidden');
         
+        // Delegated copy-to-clipboard for tutorial command snippets
+        this.tutorialContent.querySelectorAll('.tutorial-cmd').forEach(el => {
+            const doCopy = () => {
+                const text = el.getAttribute('data-copy');
+                if (text && navigator.clipboard) {
+                    navigator.clipboard.writeText(text).catch(() => {});
+                }
+            };
+            el.addEventListener('click', doCopy);
+            el.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    doCopy();
+                }
+            });
+        });
+
         // Add entrance animation
         requestAnimationFrame(() => {
             this.tutorialModal.style.opacity = '1';

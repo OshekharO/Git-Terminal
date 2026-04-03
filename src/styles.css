@@ -192,6 +192,15 @@ html, body {
   outline-offset: 2px;
 }
 
+.btn-interactive:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.btn-interactive:focus-visible {
+  outline: 2px solid var(--color-accent-blue);
+  outline-offset: 2px;
+}
+
 /* Quick command buttons */
 .quick-cmd {
   transition: all var(--transition-normal);
@@ -480,4 +489,19 @@ html, body {
 
 .editor-action-btn:active {
   transform: translateY(0);
+}
+
+/* Tutorial command copy snippets */
+.tutorial-cmd {
+  border-radius: var(--radius-sm);
+  padding: 1px 2px;
+}
+
+.tutorial-cmd:focus-visible {
+  outline: 2px solid var(--color-accent-blue);
+  outline-offset: 1px;
+}
+
+.tutorial-cmd:hover {
+  background: rgba(88, 166, 255, 0.08);
 }
