@@ -303,7 +303,7 @@ Consistent spacing using custom properties:
 
 ## 🚢 Cloudflare Pages Deployment
 
-This project is optimized for Cloudflare Pages:
+This project is optimized for Cloudflare Pages and is live at **https://gitbash.pages.dev/**.
 
 - **Static-only**: No server-side code required
 - **`_headers`**: Configures caching (`max-age=31536000` for assets, `no-cache` for HTML) and security headers

@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /_headers
+Disallow: /_redirects
+
+Sitemap: https://gitbash.pages.dev/sitemap.xml
