@@ -24,7 +24,7 @@ const MIN_EDITOR_LINES = 20;
  * - id: unique identifier
  * - title: display name
  * - desc: description shown to user
- * - hint: help text for users
+ * - hints: array of help text strings for users (progressive hints)
  * - check: function that returns true when exercise is complete
  * - difficulty: 'beginner' | 'intermediate' | 'advanced'
  * - category: grouping category
@@ -35,7 +35,7 @@ const EXERCISES = [
         id: 'config-user',
         title: 'Configure Git User',
         desc: 'Configure your Git user name and email (required before committing)',
-        hint: 'Use: git config --global user.name "Your Name" and git config --global user.email "your@email.com"',
+        hints: 'Use: git config --global user.name "Your Name" and git config --global user.email "your@email.com"',
         difficulty: 'beginner',
         category: 'setup',
         check: (state) => state.config['user.name'] !== DEFAULT_USER_NAME
@@ -44,7 +44,7 @@ const EXERCISES = [
         id: 'init-repo',
         title: 'Initialize Repository',
         desc: 'Initialize a new Git repository in the current directory',
-        hint: 'Use: git init - This creates a .git folder to track your changes',
+        hints: 'Use: git init - This creates a .git folder to track your changes',
         difficulty: 'beginner',
         category: 'setup',
         check: (state) => state.currentRepo !== null
@@ -53,7 +53,7 @@ const EXERCISES = [
         id: 'check-status',
         title: 'Check Repository Status',
         desc: 'Use git status to see the current state of your repository',
-        hint: 'Use: git status - This shows untracked, modified, and staged files',
+        hints: 'Use: git status - This shows untracked, modified, and staged files',
         difficulty: 'beginner',
         category: 'basics',
         check: (state, history) => history && history.some(cmd => cmd.includes('git status'))
@@ -62,7 +62,7 @@ const EXERCISES = [
         id: 'create-file',
         title: 'Create a New File',
         desc: 'Create a new file using touch or echo command',
-        hint: 'Use: touch myfile.txt or echo > myfile.txt "Hello World"',
+        hints: 'Use: touch myfile.txt or echo > myfile.txt "Hello World"',
         difficulty: 'beginner',
         category: 'basics',
         check: (state) => Object.keys(state.workingDirectory).length > 4
@@ -71,7 +71,7 @@ const EXERCISES = [
         id: 'add-files',
         title: 'Stage Files',
         desc: 'Add files to the staging area before committing',
-        hint: 'Use: git add <filename> for specific files or git add . for all files',
+        hints: 'Use: git add <filename> for specific files or git add . for all files',
         difficulty: 'beginner',
         category: 'basics',
         check: (state) => state.stagingArea.length > 0
@@ -80,7 +80,7 @@ const EXERCISES = [
         id: 'first-commit',
         title: 'First Commit',
         desc: 'Make your first commit with a descriptive message',
-        hint: 'Use: git commit -m "Initial commit" - Always write clear commit messages',
+        hints: 'Use: git commit -m "Initial commit" - Always write clear commit messages',
         difficulty: 'beginner',
         category: 'basics',
         check: (state) => state.commits.length > 0
@@ -89,7 +89,7 @@ const EXERCISES = [
         id: 'view-log',
         title: 'View Commit History',
         desc: 'View your commit history using git log',
-        hint: 'Use: git log or git log --oneline for a compact view',
+        hints: 'Use: git log or git log --oneline for a compact view',
         difficulty: 'beginner',
         category: 'basics',
         check: (state, history) => history && history.some(cmd => cmd.includes('git log'))
@@ -98,7 +98,7 @@ const EXERCISES = [
         id: 'list-files',
         title: 'List Directory Contents',
         desc: 'Use ls to see all files in your working directory',
-        hint: 'Use: ls - This shows all files that Git can track',
+        hints: 'Use: ls - This shows all files that Git can track',
         difficulty: 'beginner',
         category: 'basics',
         check: (state, history) => history && history.some(cmd => cmd === 'ls')
@@ -109,7 +109,7 @@ const EXERCISES = [
         id: 'create-branch',
         title: 'Create a New Branch',
         desc: 'Create a new branch for feature development',
-        hint: 'Use: git branch feature-name to create a branch',
+        hints: 'Use: git branch feature-name to create a branch',
         difficulty: 'intermediate',
         category: 'branching',
         check: (state) => state.branches.length > 1
@@ -118,7 +118,7 @@ const EXERCISES = [
         id: 'switch-branch',
         title: 'Switch Between Branches',
         desc: 'Switch to your newly created branch',
-        hint: 'Use: git checkout branch-name or git switch branch-name',
+        hints: 'Use: git checkout branch-name or git switch branch-name',
         difficulty: 'intermediate',
         category: 'branching',
         check: (state) => state.branches.length > 1 && state.currentBranch !== 'main'
@@ -127,7 +127,7 @@ const EXERCISES = [
         id: 'checkout-create',
         title: 'Create and Switch in One Command',
         desc: 'Create a new branch and switch to it in one step',
-        hint: 'Use: git checkout -b new-branch-name - This is a common shortcut',
+        hints: 'Use: git checkout -b new-branch-name - This is a common shortcut',
         difficulty: 'intermediate',
         category: 'branching',
         check: (state) => state.branches.length >= 2
@@ -136,7 +136,7 @@ const EXERCISES = [
         id: 'add-remote',
         title: 'Add Remote Repository',
         desc: 'Connect your local repo to a remote repository (like GitHub)',
-        hint: 'Use: git remote add origin https://github.com/username/repo.git',
+        hints: 'Use: git remote add origin https://github.com/username/repo.git',
         difficulty: 'intermediate',
         category: 'collaboration',
         check: (state) => Object.keys(state.remoteRepos).length > 0
@@ -145,7 +145,7 @@ const EXERCISES = [
         id: 'view-remotes',
         title: 'View Remote Repositories',
         desc: 'List all configured remote repositories',
-        hint: 'Use: git remote -v to see remotes with their URLs',
+        hints: 'Use: git remote -v to see remotes with their URLs',
         difficulty: 'intermediate',
         category: 'collaboration',
         check: (state, history) => history && history.some(cmd => cmd.includes('git remote -v'))
@@ -154,7 +154,7 @@ const EXERCISES = [
         id: 'push-changes',
         title: 'Push to Remote',
         desc: 'Push your local commits to the remote repository',
-        hint: 'Use: git push origin main (or your current branch name)',
+        hints: 'Use: git push origin main (or your current branch name)',
         difficulty: 'intermediate',
         category: 'collaboration',
         check: (state, history) => history && history.some(cmd => cmd.includes('git push'))
@@ -163,7 +163,7 @@ const EXERCISES = [
         id: 'view-diff',
         title: 'View Changes with Diff',
         desc: 'Use git diff to see what changes you have made',
-        hint: 'Use: git diff to see unstaged changes, git diff --staged for staged changes',
+        hints: 'Use: git diff to see unstaged changes, git diff --staged for staged changes',
         difficulty: 'intermediate',
         category: 'workflow',
         check: (state, history) => history && history.some(cmd => cmd.includes('git diff'))
@@ -172,7 +172,7 @@ const EXERCISES = [
         id: 'multiple-commits',
         title: 'Build a Commit History',
         desc: 'Make at least 3 commits to build a proper history',
-        hint: 'Create files with touch, stage with git add, commit with git commit -m "message"',
+        hints: 'Create files with touch, stage with git add, commit with git commit -m "message"',
         difficulty: 'intermediate',
         category: 'workflow',
         check: (state) => state.commits.length >= 3
@@ -181,7 +181,7 @@ const EXERCISES = [
         id: 'delete-branch',
         title: 'Delete a Branch',
         desc: 'Delete a branch that you no longer need',
-        hint: 'Use: git branch -d branch-name (switch to another branch first)',
+        hints: 'Use: git branch -d branch-name (switch to another branch first)',
         difficulty: 'intermediate',
         category: 'branching',
         check: (state, history) => history && history.some(cmd => cmd.includes('git branch -d'))
@@ -190,7 +190,7 @@ const EXERCISES = [
         id: 'edit-file',
         title: 'Edit a File',
         desc: 'Use nano or vim to edit an existing file',
-        hint: 'Use: nano README.md or vim README.md to edit files',
+        hints: 'Use: nano README.md or vim README.md to edit files',
         difficulty: 'intermediate',
         category: 'workflow',
         check: (state) => Object.values(state.workingDirectory).some(f => f.modified)
@@ -201,7 +201,7 @@ const EXERCISES = [
         id: 'stash-changes',
         title: 'Stash Your Changes',
         desc: 'Use git stash to temporarily save uncommitted changes before switching tasks',
-        hint: 'Modify a file with nano/vim, then use: git stash to save and git stash pop to restore',
+        hints: 'Modify a file with nano/vim, then use: git stash to save and git stash pop to restore',
         difficulty: 'intermediate',
         category: 'workflow',
         check: (state, history) => history && history.some(cmd => cmd.startsWith('git stash'))
@@ -210,7 +210,7 @@ const EXERCISES = [
         id: 'create-tag',
         title: 'Tag a Release',
         desc: 'Create a tag to mark a release or important point in history',
-        hint: 'Use: git tag v1.0 to create a tag, git tag to list all tags',
+        hints: 'Use: git tag v1.0 to create a tag, git tag to list all tags',
         difficulty: 'intermediate',
         category: 'workflow',
         check: (state) => Object.keys(state.tags).length > 0
@@ -219,7 +219,7 @@ const EXERCISES = [
         id: 'merge-branch',
         title: 'Merge a Branch',
         desc: 'Merge a feature branch into main branch',
-        hint: 'First checkout main with git checkout main, then git merge feature-branch',
+        hints: 'First checkout main with git checkout main, then git merge feature-branch',
         difficulty: 'advanced',
         category: 'branching',
         check: (state) => state.commits.some(c => c.message.toLowerCase().includes('merge'))
@@ -228,7 +228,7 @@ const EXERCISES = [
         id: 'reset-hard',
         title: 'Reset Changes',
         desc: 'Discard all uncommitted changes using reset',
-        hint: 'Use: git reset --hard to discard all changes (be careful with this!)',
+        hints: 'Use: git reset --hard to discard all changes (be careful with this!)',
         difficulty: 'advanced',
         category: 'undoing',
         check: (state, history) => history && history.some(cmd => cmd.includes('git reset --hard'))
@@ -237,7 +237,7 @@ const EXERCISES = [
         id: 'clone-repo',
         title: 'Clone a Repository',
         desc: 'Clone an existing repository from a URL',
-        hint: 'Use: git clone https://github.com/user/repo.git',
+        hints: 'Use: git clone https://github.com/user/repo.git',
         difficulty: 'advanced',
         category: 'collaboration',
         check: (state, history) => history && history.some(cmd => cmd.includes('git clone'))
@@ -246,7 +246,7 @@ const EXERCISES = [
         id: 'complete-workflow',
         title: 'Complete Feature Workflow',
         desc: 'Complete a full feature workflow: create branch, make changes, commit, merge',
-        hint: 'Create a feature branch, make commits, switch to main, and merge your feature',
+        hints: 'Create a feature branch, make commits, switch to main, and merge your feature',
         difficulty: 'advanced',
         category: 'workflow',
         check: (state) => state.commits.length >= 4 && 
@@ -510,6 +510,11 @@ const SYSTEM_COMMANDS = {
         usage: 'help',
         examples: ['help']
     },
+    hint: {
+        description: 'Show next hint for current exercise',
+        usage: 'hint',
+        examples: ['hint']
+    },
     history: {
         description: 'Show command history',
         usage: 'history',
@@ -556,7 +561,10 @@ class GitTerminal {
         this.originalFileContent = null;
         this.editorTextarea = null;
         this.editorKeydownHandler = null;
-        
+
+        // Exercise hint state
+        this.currentHintIndex = 0;
+
         this.init();
     }
     
@@ -593,6 +601,69 @@ class GitTerminal {
         };
     }
 
+    loadPersistedState() {
+        try {
+            const raw = localStorage.getItem('git_terminal_state');
+            if (raw) this.applyPersistedState(JSON.parse(raw));
+        } catch {
+            // ignore corrupt state
+        }
+    }
+
+    applyPersistedState(data) {
+        if (!data) return;
+        this.gitState = { ...this.gitState, ...data };
+        this.gitState.workingDirectory = { ...this.gitState.workingDirectory };
+        this.gitState.commits = (data.commits || []).map(c => ({
+            ...c,
+            timestamp: c.timestamp ? new Date(c.timestamp) : new Date()
+        }));
+        this.gitState.stash = (data.stash || []).map(s => ({
+            ...s,
+            timestamp: s.timestamp ? new Date(s.timestamp) : new Date()
+        }));
+        this.currentExercise = data.currentExercise || null;
+        this.exerciseProgress = data.exerciseProgress || 0;
+        this.completedExercises = new Set(data.completedExercises || []);
+        this.history = data.history || [];
+        this.currentHintIndex = 0;
+    }
+
+    getPersistableState() {
+        const data = {
+            currentRepo: this.gitState.currentRepo,
+            currentBranch: this.gitState.currentBranch,
+            branches: this.gitState.branches,
+            commits: this.gitState.commits.map(c => ({
+                ...c,
+                timestamp: c.timestamp instanceof Date ? c.timestamp.toISOString() : c.timestamp
+            })),
+            stagingArea: this.gitState.stagingArea,
+            workingDirectory: this.gitState.workingDirectory,
+            remoteRepos: this.gitState.remoteRepos,
+            stash: this.gitState.stash.map(s => ({
+                ...s,
+                timestamp: s.timestamp instanceof Date ? s.timestamp.toISOString() : s.timestamp
+            })),
+            tags: this.gitState.tags,
+            config: this.gitState.config,
+            HEAD: this.gitState.HEAD,
+            currentExercise: this.currentExercise,
+            exerciseProgress: this.exerciseProgress,
+            completedExercises: Array.from(this.completedExercises),
+            history: this.history.slice(-500)
+        };
+        return data;
+    }
+
+    persistState() {
+        try {
+            localStorage.setItem('git_terminal_state', JSON.stringify(this.getPersistableState()));
+        } catch {
+            // quota exceeded — silently ignore
+        }
+    }
+
     createFile(content = '') {
         return {
             type: 'file',
@@ -604,10 +675,13 @@ class GitTerminal {
     }
 
     init() {
+        this.loadPersistedState();
+        this.applyTheme();
+        this.applyFontSize();
         this.bindEvents();
         this.updatePrompt();
         this.showWelcomeMessage();
-        
+
         // Initialize working directory
         this.gitState.workingDirectory = { ...this.fileSystem['/home/user'].children };
     }
@@ -636,20 +710,39 @@ class GitTerminal {
             this.addButtonFeedback('btn-clear');
             this.clearOutput();
         });
-        
+
+        document.getElementById('btn-copy').addEventListener('click', () => {
+            this.addButtonFeedback('btn-copy');
+            this.copyTerminalOutput();
+        });
+
+        document.getElementById('btn-font-increase').addEventListener('click', () => {
+            this.addButtonFeedback('btn-font-increase');
+            this.adjustFontSize(1);
+        });
+
+        document.getElementById('btn-font-decrease').addEventListener('click', () => {
+            this.addButtonFeedback('btn-font-decrease');
+            this.adjustFontSize(-1);
+        });
+
         document.getElementById('btn-reset').addEventListener('click', () => {
             this.addButtonFeedback('btn-reset');
             this.resetRepository();
         });
-        
+
         document.getElementById('btn-exercise').addEventListener('click', () => {
             this.addButtonFeedback('btn-exercise');
             this.startExercise();
         });
-        
+
         document.getElementById('btn-tutorial').addEventListener('click', () => {
             this.addButtonFeedback('btn-tutorial');
             this.showTutorial();
+        });
+
+        document.getElementById('btn-theme').addEventListener('click', () => {
+            this.toggleTheme();
         });
         
         document.getElementById('close-tutorial').addEventListener('click', () => this.hideTutorial());
@@ -680,7 +773,35 @@ class GitTerminal {
             if (e.key === 'Escape' && !this.tutorialModal.classList.contains('hidden')) {
                 this.hideTutorial();
             }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                e.preventDefault();
+                const searchBar = document.getElementById('search-bar');
+                if (searchBar && !searchBar.classList.contains('hidden')) {
+                    this.closeSearch();
+                } else {
+                    this.openSearch();
+                }
+            }
         });
+
+        // Search bar handlers
+        const searchInput = document.getElementById('search-input');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => this.performSearch(e.target.value));
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (e.shiftKey) this.searchPrev();
+                    else this.searchNext();
+                } else if (e.key === 'Escape') {
+                    this.closeSearch();
+                }
+            });
+        }
+
+        document.getElementById('search-close')?.addEventListener('click', () => this.closeSearch());
+        document.getElementById('search-next')?.addEventListener('click', () => this.searchNext());
+        document.getElementById('search-prev')?.addEventListener('click', () => this.searchPrev());
 
         // Focus input when clicking anywhere in terminal
         document.querySelector('.terminal-body')?.addEventListener('click', () => {
@@ -722,6 +843,142 @@ class GitTerminal {
             e.preventDefault();
             this.autoComplete();
         }
+    }
+
+    toggleTheme() {
+        const html = document.documentElement;
+        const btn = document.getElementById('btn-theme');
+        const isDark = !html.hasAttribute('data-theme') || html.getAttribute('data-theme') === 'dark';
+        html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+        localStorage.setItem('git_terminal_theme', isDark ? 'light' : 'dark');
+        if (btn) {
+            btn.innerHTML = isDark
+                ? '<i class="fas fa-sun" aria-hidden="true"></i>'
+                : '<i class="fas fa-moon" aria-hidden="true"></i>';
+        }
+        this.addSuccessFeedback();
+    }
+
+    applyTheme() {
+        const saved = localStorage.getItem('git_terminal_theme');
+        const btn = document.getElementById('btn-theme');
+        if (saved) {
+            document.documentElement.setAttribute('data-theme', saved);
+            if (btn) {
+                btn.innerHTML = saved === 'light'
+                    ? '<i class="fas fa-sun" aria-hidden="true"></i>'
+                    : '<i class="fas fa-moon" aria-hidden="true"></i>';
+            }
+        }
+    }
+
+    adjustFontSize(delta) {
+        const root = document.documentElement;
+        const current = parseFloat(getComputedStyle(root).getPropertyValue('--terminal-font-size').trim()) || 14;
+        const next = Math.min(24, Math.max(10, current + delta));
+        root.style.setProperty('--terminal-font-size', `${next}px`);
+        localStorage.setItem('git_terminal_font_size', String(next));
+    }
+
+    applyFontSize() {
+        const saved = localStorage.getItem('git_terminal_font_size');
+        if (saved) {
+            document.documentElement.style.setProperty('--terminal-font-size', `${saved}px`);
+        }
+    }
+
+    copyTerminalOutput() {
+        const lines = Array.from(this.outputEl.querySelectorAll('.terminal-line'))
+            .map(el => el.textContent || '')
+            .join('\n');
+        if (!lines.trim()) {
+            this.writeWarning('Nothing to copy');
+            return;
+        }
+        navigator.clipboard.writeText(lines).then(() => {
+            this.writeSuccess('Terminal output copied to clipboard');
+            this.addSuccessFeedback();
+        }).catch(() => {
+            this.writeError('Failed to copy output');
+        });
+    }
+
+    openSearch() {
+        const searchBar = document.getElementById('search-bar');
+        const searchInput = document.getElementById('search-input');
+        searchBar.classList.remove('hidden');
+        searchInput.value = '';
+        searchInput.focus();
+        this.searchMatches = [];
+        this.searchIndex = -1;
+        this.clearSearchHighlights();
+    }
+
+    closeSearch() {
+        const searchBar = document.getElementById('search-bar');
+        const searchInput = document.getElementById('search-input');
+        searchBar.classList.add('hidden');
+        searchInput.value = '';
+        this.searchMatches = [];
+        this.searchIndex = -1;
+        this.clearSearchHighlights();
+        this.cmdLine.focus();
+    }
+
+    performSearch(query) {
+        this.clearSearchHighlights();
+        this.searchMatches = [];
+        this.searchIndex = -1;
+
+        if (!query) {
+            document.getElementById('search-count').textContent = '';
+            return;
+        }
+
+        const lines = this.outputEl.querySelectorAll('.terminal-line');
+        lines.forEach(line => {
+            const text = line.textContent || '';
+            if (text.toLowerCase().includes(query.toLowerCase())) {
+                this.searchMatches.push(line);
+            }
+        });
+
+        if (this.searchMatches.length > 0) {
+            this.searchIndex = 0;
+            this.highlightSearchMatch();
+            document.getElementById('search-count').textContent = `1/${this.searchMatches.length}`;
+        } else {
+            document.getElementById('search-count').textContent = '0/0';
+        }
+    }
+
+    highlightSearchMatch() {
+        this.clearSearchHighlights();
+        if (this.searchIndex >= 0 && this.searchIndex < this.searchMatches.length) {
+            const el = this.searchMatches[this.searchIndex];
+            el.classList.add('bg-yellow-500/30', 'rounded');
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
+    clearSearchHighlights() {
+        this.outputEl.querySelectorAll('.terminal-line').forEach(el => {
+            el.classList.remove('bg-yellow-500/30', 'rounded');
+        });
+    }
+
+    searchNext() {
+        if (this.searchMatches.length === 0) return;
+        this.searchIndex = (this.searchIndex + 1) % this.searchMatches.length;
+        this.highlightSearchMatch();
+        document.getElementById('search-count').textContent = `${this.searchIndex + 1}/${this.searchMatches.length}`;
+    }
+
+    searchPrev() {
+        if (this.searchMatches.length === 0) return;
+        this.searchIndex = (this.searchIndex - 1 + this.searchMatches.length) % this.searchMatches.length;
+        this.highlightSearchMatch();
+        document.getElementById('search-count').textContent = `${this.searchIndex + 1}/${this.searchMatches.length}`;
     }
 
     autoComplete() {
@@ -769,18 +1026,59 @@ class GitTerminal {
         setTimeout(() => this.cmdLine.classList.remove('bg-blue-500/10'), 200);
     }
 
+    tokenizeCommand(line) {
+        const tokens = [];
+        let current = '';
+        let inQuotes = false;
+
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+
+            if (inQuotes) {
+                if (char === '\\' && i + 1 < line.length) {
+                    current += line[i + 1];
+                    i++;
+                } else if (char === '"' || char === "'") {
+                    inQuotes = false;
+                    if (current) {
+                        tokens.push(current);
+                        current = '';
+                    }
+                } else {
+                    current += char;
+                }
+            } else {
+                if (char === '"' || char === "'") {
+                    inQuotes = true;
+                } else if (char === ' ' || char === '\t') {
+                    if (current) {
+                        tokens.push(current);
+                        current = '';
+                    }
+                } else {
+                    current += char;
+                }
+            }
+        }
+
+        if (current) tokens.push(current);
+        return tokens;
+    }
+
     executeCommand(line) {
         this.writeLine(`<span class="text-green-400">${this.getPromptText()}</span> ${this.escapeHtml(line)}`, 'text-gray-300 command-feedback');
         this.history.push(line);
-        
-        const [command, ...args] = line.split(' ');
-        
+
+        const tokens = this.tokenizeCommand(line);
+        const [command, ...args] = tokens;
+
         if (command === 'git') {
             this.executeGitCommand(args);
         } else {
             this.executeSystemCommand(command, args);
         }
-        
+
+        this.persistState();
         this.checkExercise();
     }
     
@@ -826,7 +1124,10 @@ class GitTerminal {
             'fetch': () => this.gitFetch(gitArgs),
             'tag': () => this.gitTag(gitArgs),
             'show': () => this.gitShow(gitArgs),
-            'help': () => this.gitHelp(gitArgs)
+            'help': () => this.gitHelp(gitArgs),
+            'revert': () => this.gitRevert(gitArgs),
+            'mv': () => this.gitMv(gitArgs),
+            'blame': () => this.gitBlame(gitArgs)
         };
 
         if (commandMap[gitCommand]) {
@@ -850,6 +1151,7 @@ class GitTerminal {
             'clear': () => this.clearOutput(),
             'exercise': () => this.startExercise(),
             'help': () => this.showHelp(),
+            'hint': () => this.showNextHint(),
             'history': () => this.showHistory()
         };
 
@@ -1113,7 +1415,7 @@ class GitTerminal {
         }
 
         const target = args[0];
-        
+
         if (args[0] === '-b' && args[1]) {
             // Create and switch to new branch
             const newBranch = args[1];
@@ -1130,6 +1432,14 @@ class GitTerminal {
             this.gitState.currentBranch = target;
             this.writeSuccess(`Switched to branch '${target}'`);
             this.updatePrompt();
+            this.addSuccessFeedback();
+        } else if (this.gitState.workingDirectory[target]) {
+            // Restore file from HEAD
+            const file = this.gitState.workingDirectory[target];
+            file.content = file.originalContent;
+            file.modified = false;
+            file.staged = false;
+            this.writeSuccess(`Restored '${target}'`);
             this.addSuccessFeedback();
         } else {
             this.writeError(`error: pathspec '${target}' did not match any file(s) known to git`);
@@ -1202,9 +1512,19 @@ class GitTerminal {
             Object.entries(this.gitState.config).forEach(([key, value]) => {
                 this.writeLine(`${key}=${value}`);
             });
+        } else if (args[0] === '--global' && args[1] === '--unset' && args[2]) {
+            const key = args[2];
+            if (this.gitState.config[key] !== undefined) {
+                delete this.gitState.config[key];
+                this.writeSuccess(`Unset global ${key}`);
+                this.addSuccessFeedback();
+            } else {
+                this.writeError(`error: key '${key}' not found`);
+            }
         } else {
             this.writeError('usage: git config [--global] <key> <value>');
             this.writeLine('   or: git config --list', 'text-gray-400');
+            this.writeLine('   or: git config --global --unset <key>', 'text-gray-400');
         }
     }
 
@@ -1304,7 +1624,7 @@ class GitTerminal {
                 hash: this.generateCommitHash(),
                 message: 'Initial commit',
                 branch: 'main',
-                files: ['README.md'],
+                files: ['README.md', 'index.html', 'style.css'],
                 timestamp: new Date(),
                 author: 'Other User <other@example.com>',
                 pushed: true
@@ -1313,12 +1633,20 @@ class GitTerminal {
         this.gitState.branches = ['main'];
         this.gitState.currentBranch = 'main';
         this.gitState.remoteRepos['origin'] = args[0];
+        this.gitState.HEAD = this.gitState.commits[0].hash;
+
+        // Populate working directory with cloned files
+        this.gitState.workingDirectory = {
+            'README.md': this.createFile('# Cloned Project\n\nWelcome to the cloned repo!'),
+            'index.html': this.createFile('<!DOCTYPE html>\n<html>\n<head>\n    <title>Cloned Project</title>\n</head>\n<body>\n    <h1>Hello from cloned repo</h1>\n</body>\n</html>'),
+            'style.css': this.createFile('body { margin: 0; padding: 20px; font-family: Arial; }')
+        };
 
         this.writeLine(`Cloning into '/home/user'...`, 'text-gray-400');
-        this.writeLine('remote: Enumerating objects: 1, done.', 'text-gray-400');
-        this.writeLine('remote: Counting objects: 100% (1/1), done.', 'text-gray-400');
-        this.writeLine('remote: Total 1 (delta 0), reused 0 (delta 0), pack-reused 0', 'text-gray-400');
-        this.writeLine('Receiving objects: 100% (1/1), done.', 'text-gray-400');
+        this.writeLine('remote: Enumerating objects: 3, done.', 'text-gray-400');
+        this.writeLine('remote: Counting objects: 100% (3/3), done.', 'text-gray-400');
+        this.writeLine('remote: Total 3 (delta 0), reused 0 (delta 0), pack-reused 0', 'text-gray-400');
+        this.writeLine('Receiving objects: 100% (3/3), done.', 'text-gray-400');
         this.updatePrompt();
         this.addSuccessFeedback();
     }
@@ -1370,6 +1698,30 @@ class GitTerminal {
             });
             this.writeSuccess('HEAD is now at latest commit');
             this.addSuccessFeedback();
+        } else if (args[0] === '--soft') {
+            if (this.gitState.commits.length > 0) {
+                const last = this.gitState.commits.pop();
+                this.gitState.HEAD = last.parent;
+                this.writeSuccess(`HEAD is now at ${this.gitState.HEAD ? this.gitState.HEAD.substring(0, 7) : 'nothing'} (last commit undone)`);
+                this.addSuccessFeedback();
+            } else {
+                this.writeWarning('No commits to undo');
+            }
+        } else if (args[0] === '--mixed') {
+            if (this.gitState.commits.length > 0) {
+                const last = this.gitState.commits.pop();
+                this.gitState.HEAD = last.parent;
+                this.gitState.stagingArea = [];
+                last.files.forEach(filename => {
+                    if (this.gitState.workingDirectory[filename]) {
+                        this.gitState.workingDirectory[filename].staged = false;
+                    }
+                });
+                this.writeSuccess(`HEAD is now at ${this.gitState.HEAD ? this.gitState.HEAD.substring(0, 7) : 'nothing'} (last commit undone, changes unstaged)`);
+                this.addSuccessFeedback();
+            } else {
+                this.writeWarning('No commits to undo');
+            }
         } else if (args[0] === 'HEAD' && args[1]) {
             // Unstage a specific file
             const filename = args[1];
@@ -1383,7 +1735,7 @@ class GitTerminal {
                 this.writeError(`error: pathspec '${filename}' did not match any file(s) known to git`);
             }
         } else {
-            this.writeError('usage: git reset [--hard]');
+            this.writeError('usage: git reset [--soft | --mixed | --hard]');
             this.writeLine('   or: git reset HEAD <file>', 'text-gray-400');
         }
     }
@@ -1405,13 +1757,30 @@ class GitTerminal {
             return;
         }
 
+        if (targetBranch === this.gitState.currentBranch) {
+            this.writeWarning(`Already up to date.`);
+            return;
+        }
+
+        // Find the latest commit on the target branch
+        const targetCommit = [...this.gitState.commits].reverse().find(c => c.branch === targetBranch);
+        if (targetCommit) {
+            // Bring target branch files into working directory
+            targetCommit.files.forEach(filename => {
+                if (!this.gitState.workingDirectory[filename]) {
+                    this.gitState.workingDirectory[filename] = this.createFile('');
+                }
+                this.gitState.workingDirectory[filename].modified = true;
+            });
+        }
+
         // Create a merge commit
         const commitHash = this.generateCommitHash();
         const commit = {
             hash: commitHash,
             message: `Merge branch '${targetBranch}' into ${this.gitState.currentBranch}`,
             branch: this.gitState.currentBranch,
-            files: [],
+            files: targetCommit ? [...targetCommit.files] : [],
             timestamp: new Date(),
             author: `${this.gitState.config['user.name']} <${this.gitState.config['user.email']}>`,
             parent: this.gitState.HEAD
@@ -1748,6 +2117,128 @@ class GitTerminal {
         }
     }
 
+    gitRevert(args) {
+        if (!this.gitState.currentRepo) {
+            this.writeError('fatal: not a git repository');
+            return;
+        }
+
+        if (args.length === 0) {
+            this.writeError('fatal: no commit specified');
+            return;
+        }
+
+        const commitRef = args[0];
+        let commit = null;
+
+        if (commitRef === 'HEAD') {
+            commit = this.gitState.commits[this.gitState.commits.length - 1];
+        } else {
+            commit = this.gitState.commits.find(c => c.hash.startsWith(commitRef));
+        }
+
+        if (!commit) {
+            this.writeError(`fatal: bad revision '${commitRef}'`);
+            return;
+        }
+
+        const revertHash = this.generateCommitHash();
+        const revertCommit = {
+            hash: revertHash,
+            message: `Revert "${commit.message}"`,
+            branch: this.gitState.currentBranch,
+            files: [...commit.files],
+            timestamp: new Date(),
+            author: `${this.gitState.config['user.name']} <${this.gitState.config['user.email']}>`,
+            parent: this.gitState.HEAD
+        };
+
+        this.gitState.commits.push(revertCommit);
+        this.gitState.HEAD = revertHash;
+
+        this.writeSuccess(`[${this.gitState.currentBranch} ${revertHash.substring(0, 7)}] ${revertCommit.message}`);
+        this.addSuccessFeedback();
+    }
+
+    gitMv(args) {
+        if (!this.gitState.currentRepo) {
+            this.writeError('fatal: not a git repository');
+            return;
+        }
+
+        if (args.length < 2) {
+            this.writeError('usage: git mv <source> <destination>');
+            return;
+        }
+
+        const src = args[0];
+        const dest = args[1];
+
+        if (!this.gitState.workingDirectory[src]) {
+            this.writeError(`fatal: bad source '${src}'`);
+            return;
+        }
+
+        this.gitState.workingDirectory[dest] = this.gitState.workingDirectory[src];
+        delete this.gitState.workingDirectory[src];
+
+        const stagingIdx = this.gitState.stagingArea.indexOf(src);
+        if (stagingIdx !== -1) {
+            this.gitState.stagingArea[stagingIdx] = dest;
+        }
+
+        this.gitState.commits.forEach(commit => {
+            const fileIdx = commit.files.indexOf(src);
+            if (fileIdx !== -1) {
+                commit.files[fileIdx] = dest;
+            }
+        });
+
+        this.writeSuccess(`Renamed '${src}' to '${dest}'`);
+        this.addSuccessFeedback();
+    }
+
+    gitBlame(args) {
+        if (!this.gitState.currentRepo) {
+            this.writeError('fatal: not a git repository');
+            return;
+        }
+
+        if (!args[0]) {
+            this.writeError('usage: git blame <file>');
+            return;
+        }
+
+        const filename = args[0];
+        const file = this.gitState.workingDirectory[filename];
+
+        if (!file) {
+            this.writeError(`fatal: no such path '${filename}' in HEAD`);
+            return;
+        }
+
+        let lastCommit = null;
+        for (let i = this.gitState.commits.length - 1; i >= 0; i--) {
+            if (this.gitState.commits[i].files.includes(filename)) {
+                lastCommit = this.gitState.commits[i];
+                break;
+            }
+        }
+
+        if (!lastCommit) {
+            this.writeLine(`No history for ${filename}`, 'text-gray-400');
+            return;
+        }
+
+        const lines = file.content.split('\n');
+        const hash = lastCommit.hash.substring(0, 7);
+        const author = lastCommit.author.split(' <')[0];
+
+        lines.forEach(line => {
+            this.writeLine(`<span class="commit-hash">${hash}</span> (<span class="text-yellow-400">${author}</span>) ${this.escapeHtml(line)}`);
+        });
+    }
+
     gitHelp(args) {
         this.writeLine('These are common Git commands used in various situations:', 'text-blue-400');
         this.writeLine('');
@@ -1759,6 +2250,7 @@ class GitTerminal {
         this.writeLine('  add       Add file contents to the index');
         this.writeLine('  restore   Restore working tree files');
         this.writeLine('  rm        Remove files from the working tree and index');
+        this.writeLine('  mv        Move or rename a file, directory, or symlink');
         this.writeLine('  stash     Stash the changes in a dirty working directory');
         this.writeLine('');
         this.writeLine('<span class="font-semibold">Examine the history and state</span>', 'text-yellow-400');
@@ -1766,12 +2258,14 @@ class GitTerminal {
         this.writeLine('  log       Show commit logs');
         this.writeLine('  show      Show a commit or tag');
         this.writeLine('  status    Show the working tree status');
+        this.writeLine('  blame     Show what revision and author last modified each line');
         this.writeLine('');
         this.writeLine('<span class="font-semibold">Grow, mark and tweak your common history</span>', 'text-yellow-400');
         this.writeLine('  branch    List, create, or delete branches');
         this.writeLine('  commit    Record changes to the repository');
         this.writeLine('  merge     Join two or more development histories together');
         this.writeLine('  reset     Reset current HEAD to the specified state');
+        this.writeLine('  revert    Revert an existing commit');
         this.writeLine('  switch    Switch branches');
         this.writeLine('  tag       Create, list, or delete tags');
         this.writeLine('');
@@ -1784,17 +2278,21 @@ class GitTerminal {
 
     getFilesByPattern(pattern) {
         const allFiles = Object.keys(this.gitState.workingDirectory);
-        
+
         if (pattern === '.') {
-            return allFiles.filter(filename => 
-                this.gitState.workingDirectory[filename].modified || 
+            return allFiles.filter(filename =>
+                this.gitState.workingDirectory[filename].modified ||
                 !this.gitState.commits.some(commit => commit.files.includes(filename))
             );
         } else if (pattern === '*') {
             return allFiles;
-        } else if (pattern.startsWith('*.')) {
-            const ext = pattern.slice(1); // e.g. ".js"
-            return allFiles.filter(f => f.endsWith(ext));
+        } else if (pattern.includes('*')) {
+            // Convert simple glob patterns to regex
+            const regexStr = pattern
+                .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+                .replace(/\*/g, '.*');
+            const regex = new RegExp(`^${regexStr}$`);
+            return allFiles.filter(f => regex.test(f));
         } else {
             // Exact match only; avoid overly broad substring matching
             return allFiles.filter(filename => filename === pattern);
@@ -1869,9 +2367,11 @@ class GitTerminal {
         this.completedExercises.clear();
         this.history = [];
         this.histIdx = null;
+        this.currentHintIndex = 0;
         this.updatePrompt();
         this.writeSuccess('Repository has been reset');
         this.addSuccessFeedback();
+        localStorage.removeItem('git_terminal_state');
     }
 
     // System commands
@@ -2181,12 +2681,13 @@ class GitTerminal {
                 this.writeSuccess(`✅ Exercise "${exercise.title}" completed!`);
                 this.addSuccessFeedback();
                 this.currentExercise = null;
+                this.currentHintIndex = 0;
             }
         }
 
         // Find next uncompleted exercise
         const nextExercise = EXERCISES.find(e => !this.completedExercises.has(e.id));
-        
+
         if (!nextExercise) {
             this.writeLine('🎉 All exercises completed! You are now a Git master!', 'text-green-400 font-semibold');
             this.writeLine('Type "reset" and "exercise" to start over, or keep practicing!', 'text-gray-400');
@@ -2194,20 +2695,66 @@ class GitTerminal {
         }
 
         this.currentExercise = nextExercise.id;
+        this.currentHintIndex = 0;
         const exerciseNum = EXERCISES.findIndex(e => e.id === nextExercise.id) + 1;
         const total = EXERCISES.length;
-        
+
         this.writeLine('');
         this.writeLine(`🎯 Exercise ${exerciseNum}/${total}: ${nextExercise.title}`, 'text-yellow-400 font-semibold');
         this.writeLine(`   ${nextExercise.desc}`, 'text-gray-300');
-        this.writeLine(`💡 Hint: ${nextExercise.hint}`, 'text-blue-400');
         this.writeLine(`📊 Difficulty: ${nextExercise.difficulty}`, 'text-purple-400');
+
+        const hints = Array.isArray(nextExercise.hints) ? nextExercise.hints : [nextExercise.hints];
+        this.currentHintIndex = 0;
+        this.writeLine(`💡 Hint: ${hints[0]}`, 'text-blue-400');
+        if (hints.length > 1) {
+            this.writeLine(`   (Type "hint" to reveal more hints — ${hints.length} total)`, 'text-gray-500');
+        }
         this.writeLine('');
+    }
+
+    showNextHint() {
+        if (!this.currentExercise) return;
+        const exercise = EXERCISES.find(e => e.id === this.currentExercise);
+        if (!exercise) return;
+
+        const hints = Array.isArray(exercise.hints) ? exercise.hints : [exercise.hints];
+        this.currentHintIndex = (this.currentHintIndex || 0) + 1;
+
+        if (this.currentHintIndex < hints.length) {
+            this.writeLine(`💡 Hint ${this.currentHintIndex + 1}/${hints.length}: ${hints[this.currentHintIndex]}`, 'text-blue-400');
+        } else {
+            this.writeLine('💡 No more hints available — you\'ve seen them all!', 'text-yellow-400');
+        }
+    }
+
+    skipCurrentExercise() {
+        if (!this.currentExercise) return;
+        const exercise = EXERCISES.find(e => e.id === this.currentExercise);
+        if (!exercise) return;
+
+        this.completedExercises.add(this.currentExercise);
+        this.exerciseProgress++;
+        this.writeWarning(`⏭️ Skipped exercise "${exercise.title}"`);
+        this.currentExercise = null;
+        this.currentHintIndex = 0;
+        this.persistState();
+        setTimeout(() => this.startExercise(), 500);
+    }
+
+    resetCurrentExercise() {
+        if (!this.currentExercise) return;
+        const exercise = EXERCISES.find(e => e.id === this.currentExercise);
+        if (!exercise) return;
+
+        this.currentHintIndex = 0;
+        this.writeLine(`🔄 Reset exercise "${exercise.title}" — try again!`, 'text-yellow-400');
+        this.writeLine(`💡 Hint: ${Array.isArray(exercise.hints) ? exercise.hints[0] : exercise.hints}`, 'text-blue-400');
     }
 
     checkExercise() {
         if (!this.currentExercise) return;
-        
+
         const exercise = EXERCISES.find(e => e.id === this.currentExercise);
         if (exercise && exercise.check(this.gitState, this.history)) {
             this.completedExercises.add(this.currentExercise);
@@ -2216,6 +2763,8 @@ class GitTerminal {
             this.writeSuccess(`✅ Exercise completed! Moving to next...`);
             this.addSuccessFeedback();
             this.currentExercise = null;
+            this.currentHintIndex = 0;
+            this.persistState();
             setTimeout(() => this.startExercise(), 1000);
         }
     }
@@ -2259,21 +2808,27 @@ class GitTerminal {
                             const isCurrent = this.currentExercise === ex.id;
                             return `
                                 <div class="flex items-center justify-between p-2 rounded ${
-                                    isCompleted ? 'bg-green-500/20' : 
+                                    isCompleted ? 'bg-green-500/20' :
                                     isCurrent ? 'bg-blue-500/20' : 'bg-gray-600/50'
                                 }">
-                                    <div class="flex items-center">
+                                    <div class="flex items-center min-w-0">
                                         <span class="w-6 h-6 flex items-center justify-center rounded-full ${
-                                            isCompleted ? 'bg-green-500' : 
+                                            isCompleted ? 'bg-green-500' :
                                             isCurrent ? 'bg-blue-500' : 'bg-gray-500'
-                                        } text-xs mr-2">${isCompleted ? '✓' : i + 1}</span>
-                                        <span class="${isCompleted ? 'text-green-300' : ''}">${ex.title}</span>
+                                        } text-xs mr-2 flex-shrink-0">${isCompleted ? '✓' : i + 1}</span>
+                                        <span class="${isCompleted ? 'text-green-300' : ''} truncate">${ex.title}</span>
                                     </div>
-                                    <span class="text-xs px-2 py-0.5 rounded ${
-                                        ex.difficulty === 'beginner' ? 'bg-green-500/30 text-green-300' :
-                                        ex.difficulty === 'intermediate' ? 'bg-yellow-500/30 text-yellow-300' :
-                                        'bg-red-500/30 text-red-300'
-                                    }">${ex.difficulty}</span>
+                                    <div class="flex items-center gap-1 flex-shrink-0 ml-2">
+                                        ${!isCompleted ? `
+                                            <button data-action="skip-exercise" data-id="${ex.id}" class="text-xs px-1.5 py-0.5 bg-gray-600 hover:bg-gray-500 rounded text-gray-300" title="Skip exercise">Skip</button>
+                                            <button data-action="reset-exercise" data-id="${ex.id}" class="text-xs px-1.5 py-0.5 bg-gray-600 hover:bg-gray-500 rounded text-gray-300" title="Reset exercise">Reset</button>
+                                        ` : ''}
+                                        <span class="text-xs px-2 py-0.5 rounded ${
+                                            ex.difficulty === 'beginner' ? 'bg-green-500/30 text-green-300' :
+                                            ex.difficulty === 'intermediate' ? 'bg-yellow-500/30 text-yellow-300' :
+                                            'bg-red-500/30 text-red-300'
+                                        }">${ex.difficulty}</span>
+                                    </div>
                                 </div>
                             `;
                         }).join('')}
@@ -2339,6 +2894,26 @@ class GitTerminal {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     doCopy();
+                }
+            });
+        });
+
+        // Delegated skip/reset handlers for exercises
+        this.tutorialContent.querySelectorAll('[data-action="skip-exercise"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.getAttribute('data-id');
+                if (id === this.currentExercise) {
+                    this.skipCurrentExercise();
+                    this.showTutorial();
+                }
+            });
+        });
+
+        this.tutorialContent.querySelectorAll('[data-action="reset-exercise"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.getAttribute('data-id');
+                if (id === this.currentExercise) {
+                    this.resetCurrentExercise();
                 }
             });
         });

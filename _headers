@@ -1,0 +1,14 @@
+# Cache static assets aggressively
+/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# HTML files should not be cached
+/*.html
+  Cache-Control: no-cache
+
+# Security headers
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: interest-cohort=()

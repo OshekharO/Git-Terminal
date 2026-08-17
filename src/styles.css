@@ -87,6 +87,71 @@ html, body {
   }
 }
 
+/* Light theme overrides */
+[data-theme="light"] {
+  --color-bg-primary: #f6f8fa;
+  --color-bg-secondary: #ffffff;
+  --color-bg-tertiary: #eef1f4;
+  --color-bg-input: #ffffff;
+  --color-border: #d0d7de;
+  --color-border-hover: #b0b8c1;
+
+  --color-text-primary: #1f2328;
+  --color-text-secondary: #656d76;
+  --color-text-muted: #8c959f;
+
+  --color-accent-blue: #0969da;
+  --color-accent-green: #1a7f37;
+  --color-accent-yellow: #9a6700;
+  --color-accent-red: #cf222e;
+  --color-accent-purple: #8250df;
+  --color-accent-pink: #bf3989;
+  --color-accent-orange: #bc4c00;
+}
+
+[data-theme="light"] body.terminal-bg {
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .terminal-header {
+  background: linear-gradient(135deg, var(--color-bg-tertiary) 0%, var(--color-bg-secondary) 100%);
+}
+
+[data-theme="light"] .terminal-output::-webkit-scrollbar-track {
+  background: var(--color-bg-tertiary);
+}
+
+[data-theme="light"] #editor-textarea {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] #editor-line-numbers {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+}
+
+[data-theme="light"] .modal-content {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-border);
+}
+
+[data-theme="light"] .search-highlight {
+  background: rgba(9, 105, 218, 0.2);
+  border-radius: 2px;
+}
+
+/* Terminal font size */
+.terminal-output,
+.cmd-input,
+.prompt-text,
+.quick-cmd,
+.header-title,
+#search-input {
+  font-size: var(--terminal-font-size, 14px);
+}
+
 /* Terminal background */
 .terminal-bg {
   background: var(--color-bg-primary);

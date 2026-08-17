@@ -1,9 +1,11 @@
 {
   "name": "git-terminal",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "An interactive, browser-based Git learning environment that simulates real Git commands without any server-side dependencies. Perfect for beginners learning Git or developers wanting to practice commands in a safe sandbox.",
   "main": "script.js",
   "scripts": {
+    "build": "cp index.html dist/ && cp script.js dist/ && cp src/styles.css dist/ && cp -r src dist/",
+    "dev": "npx serve ."
   },
   "keywords": [
     "git",

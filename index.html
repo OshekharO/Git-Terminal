@@ -22,11 +22,14 @@
                 <h1 class="header-title text-base sm:text-lg md:text-xl font-semibold ml-1 md:ml-2">Git Practice</h1>
             </div>
             <div class="flex items-center space-x-1 md:space-x-2 text-xs md:text-sm">
-                <span class="status-badge px-2 py-1 bg-blue-500/20 text-blue-300 rounded text-xs cursor-default">v2.1.0</span>
+                <span class="status-badge px-2 py-1 bg-blue-500/20 text-blue-300 rounded text-xs cursor-default">v2.2.0</span>
                 <span class="status-badge px-2 py-1 bg-green-500/20 text-green-300 rounded text-xs flex items-center cursor-default">
                     <span class="w-1.5 h-1.5 bg-green-400 rounded-full mr-1 animate-pulse"></span>
                     Online
                 </span>
+                <button id="btn-theme" class="btn-interactive px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded text-xs" aria-label="Toggle theme" title="Toggle dark/light theme">
+                    <i class="fas fa-moon" aria-hidden="true"></i>
+                </button>
             </div>
         </div>
 
@@ -48,6 +51,15 @@
                         <button id="btn-clear" class="btn-interactive px-2 py-1 md:px-3 md:py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-xs md:text-sm flex items-center" aria-label="Clear terminal output">
                             <i class="fas fa-eraser mr-1 text-xs" aria-hidden="true"></i><span>Clear</span>
                         </button>
+                        <button id="btn-copy" class="btn-interactive px-2 py-1 md:px-3 md:py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-xs md:text-sm flex items-center" aria-label="Copy terminal output">
+                            <i class="fas fa-copy mr-1 text-xs" aria-hidden="true"></i><span>Copy</span>
+                        </button>
+                        <button id="btn-font-decrease" class="btn-interactive px-2 py-1 md:px-3 md:py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-xs md:text-sm flex items-center" aria-label="Decrease font size">
+                            <i class="fas fa-minus mr-1 text-xs" aria-hidden="true"></i><span>A-</span>
+                        </button>
+                        <button id="btn-font-increase" class="btn-interactive px-2 py-1 md:px-3 md:py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-xs md:text-sm flex items-center" aria-label="Increase font size">
+                            <i class="fas fa-plus mr-1 text-xs" aria-hidden="true"></i><span>A+</span>
+                        </button>
                         <button id="btn-reset" class="btn-interactive px-2 py-1 md:px-3 md:py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded text-xs md:text-sm flex items-center" aria-label="Reset repository">
                             <i class="fas fa-redo mr-1 text-xs" aria-hidden="true"></i><span>Reset</span>
                         </button>
@@ -63,14 +75,34 @@
 
             <!-- Terminal Body -->
             <div class="terminal-body p-3 md:p-6">
-                <div id="terminal-output" 
+                <div id="terminal-output"
                      class="terminal-output mb-3 md:mb-4 space-y-1 md:space-y-2 text-xs sm:text-sm md:text-base"
                      role="log"
                      aria-live="polite"
                      aria-label="Terminal output">
                     <!-- Output will be inserted here -->
                 </div>
-                
+
+                <!-- Search Bar -->
+                <div id="search-bar" class="hidden mb-3 md:mb-4">
+                    <div class="flex items-center space-x-2 bg-gray-800 rounded-lg px-3 py-2 border border-gray-700">
+                        <i class="fas fa-search text-gray-400 text-sm"></i>
+                        <input id="search-input" type="text" placeholder="Search in terminal output..."
+                               class="flex-1 bg-transparent border-none outline-none text-gray-100 placeholder-gray-500 text-sm"
+                               autocomplete="off" spellcheck="false">
+                        <span id="search-count" class="text-xs text-gray-400"></span>
+                        <button id="search-prev" class="text-gray-400 hover:text-white px-1" aria-label="Previous match">
+                            <i class="fas fa-chevron-up text-xs"></i>
+                        </button>
+                        <button id="search-next" class="text-gray-400 hover:text-white px-1" aria-label="Next match">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        <button id="search-close" class="text-gray-400 hover:text-white px-1" aria-label="Close search">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Input Area -->
                 <div class="input-container flex items-center space-x-2 md:space-x-3 bg-gray-800 rounded-lg px-2 py-2 sm:px-3 sm:py-2 md:px-4 md:py-3">
                     <div id="prompt" class="prompt-text text-green-400 font-medium whitespace-nowrap text-xs sm:text-sm md:text-base flex-shrink-0">
