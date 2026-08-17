@@ -677,7 +677,6 @@ class GitTerminal {
     init() {
         this.loadPersistedState();
         this.applyTheme();
-        this.applyFontSize();
         this.bindEvents();
         this.updatePrompt();
         this.showWelcomeMessage();
@@ -714,16 +713,6 @@ class GitTerminal {
         document.getElementById('btn-copy').addEventListener('click', () => {
             this.addButtonFeedback('btn-copy');
             this.copyTerminalOutput();
-        });
-
-        document.getElementById('btn-font-increase').addEventListener('click', () => {
-            this.addButtonFeedback('btn-font-increase');
-            this.adjustFontSize(1);
-        });
-
-        document.getElementById('btn-font-decrease').addEventListener('click', () => {
-            this.addButtonFeedback('btn-font-decrease');
-            this.adjustFontSize(-1);
         });
 
         document.getElementById('btn-reset').addEventListener('click', () => {
@@ -869,21 +858,6 @@ class GitTerminal {
                     ? '<i class="fas fa-sun" aria-hidden="true"></i>'
                     : '<i class="fas fa-moon" aria-hidden="true"></i>';
             }
-        }
-    }
-
-    adjustFontSize(delta) {
-        const root = document.documentElement;
-        const current = parseFloat(getComputedStyle(root).getPropertyValue('--terminal-font-size').trim()) || 14;
-        const next = Math.min(24, Math.max(10, current + delta));
-        root.style.setProperty('--terminal-font-size', `${next}px`);
-        localStorage.setItem('git_terminal_font_size', String(next));
-    }
-
-    applyFontSize() {
-        const saved = localStorage.getItem('git_terminal_font_size');
-        if (saved) {
-            document.documentElement.style.setProperty('--terminal-font-size', `${saved}px`);
         }
     }
 

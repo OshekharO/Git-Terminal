@@ -20,7 +20,6 @@ An interactive, browser-based Git learning environment that simulates real Git c
 ### 🎨 Modern UI/UX
 - **Responsive Design**: Works seamlessly on mobile, tablet, and desktop
 - **Dark / Light Theme**: Toggle between dark and light themes
-- **Adjustable Font Size**: A- / A+ controls for accessibility
 - **Terminal Search**: `Ctrl+F` to search output with prev/next navigation
 - **Copy Output**: One-click copy of all terminal output
 - **Smooth Animations**: Polished transitions and hover effects
@@ -202,7 +201,7 @@ Your progress and repository state are automatically saved to your browser's loc
 - Exercise progress and completed exercises
 - Commits, branches, stash, remotes, and tags
 - Command history (last 500 commands)
-- Theme preference and font size
+- Theme preference
 
 Use the **Reset** button to clear all persisted state and start fresh.
 
